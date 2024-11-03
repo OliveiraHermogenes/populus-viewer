@@ -1,3 +1,8 @@
+> [!IMPORTANT] 
+> Populus-Viewer is no longer actively maintained, so the information below may
+> be out of date - If you'd like to take over the project, let me know and I'll
+> redirect to your fork.
+
 # Populus-Viewer
 *Social Annotation Powered by Matrix*
 
