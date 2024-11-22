@@ -232,7 +232,7 @@ export default class Chat extends Component {
     const reactions = {}
     // XXX need to be able to handle other message types
     const messages = state.events.filter(
-      e => e.getType() === "m.room.message" &&
+      e => e.getType() === "m.room.message" && !e.isRelation("m.replace") &&
         (e.getContent().msgtype === "m.text" ||
         e.getContent().msgtype === "m.emote" ||
         e.getContent().msgtype === "m.notice" ||
