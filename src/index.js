@@ -81,6 +81,13 @@ if ('serviceWorker' in navigator) {
       console.log('[Service Worker] failed to register: ', registrationError);
     });
   });
+  navigator.serviceWorker.ready.then((registration) => {
+    registration.active.postMessage({
+      type: 'SET_AUTH_TOKEN',
+      token: localStorage.getItem('accessToken'),
+    });
+    console.log("Auth token sent to service worker.");
+  });
 }
 
 function recaptchaHandler (recaptchaToken) {
