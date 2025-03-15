@@ -80,7 +80,7 @@ registerRoute(
 );
 
 registerRoute(
-  ({ request }) => request.url.includes('_matrix/client/v1/media/download/'),
+  ({ request }) => request.url.includes('_matrix/media/v3/download/'),
   new CacheFirst({
     cacheName: 'media',
     plugins: [
