@@ -20,7 +20,7 @@ precacheAndRoute(self.__WB_MANIFEST)
 
 registerRoute(
   // dynamically cache thumbnails
-  ({ request }) => request.url.includes('_matrix/media/r0/thumbnail/') && request.destination === 'image',
+  ({ request }) => request.url.includes('_matrix/client/v1/media/thumbnail/') && request.destination === 'image',
   new CacheFirst({
     // Put all cached files in a cache named 'images'
     cacheName: 'images',
@@ -37,9 +37,9 @@ registerRoute(
 // network-first caching of aliases, roomHierarchy, and server data
 registerRoute(
   ({ request }) =>
-    request.url.includes('_matrix/client/r0/directory/room/') ||
+    request.url.includes('_matrix/client/v3/directory/room/') ||
     request.url.includes('_matrix/client/versions') ||
-    request.url.includes('_matrix/client/unstable/org.matrix.msc2946/rooms/')
+    request.url.includes('_matrix/client/v1/rooms/')
   ,
   new NetworkFirst({
     cacheName: 'aliases',
@@ -50,7 +50,7 @@ registerRoute(
 );
 
 registerRoute(
-  ({ request }) => request.url.includes('_matrix/media/r0/download/'),
+  ({ request }) => request.url.includes('_matrix/client/v1/media/download/'),
   new CacheFirst({
     cacheName: 'media',
     plugins: [
