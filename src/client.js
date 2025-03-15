@@ -9,8 +9,8 @@ function getRoomWithState(roomId) {
   return new Promise(resolve => checkForState(resolve)())
 }
 
-function getHttpUriForMxcFromHS(...theArgs) {
-  return Matrix.getHttpUriForMxc(this.getHomeserverUrl(), ...theArgs)
+function getHttpUriForMxcFromHS(mxc, width, height, resizeMethod, allowDirectLinks, allowRedirects) {
+  return Matrix.getHttpUriForMxc(this.getHomeserverUrl(), mxc, width, height, resizeMethod, allowDirectLinks, true)
 }
 
 export default class Client {

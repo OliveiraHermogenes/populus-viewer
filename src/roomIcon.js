@@ -12,7 +12,7 @@ export default class RoomIcon extends Component {
       joined: this.amJoined(),
       loaded: false,
       avatarUrl: props.avatarUrl
-        ? Client.client.mxcUrlToHttp(props.avatarUrl, 35, 35, "crop")
+        ? Client.client.mxcUrlToHttp(props.avatarUrl, 35, 35, "crop", false, true, true)
         : null
     }
   }
@@ -35,7 +35,7 @@ export default class RoomIcon extends Component {
         this.setState({
           joined: this.amJoined(),
           avatarUrl: e.getContent().url
-            ? Client.client.mxcUrlToHttp(e.getContent().url, 35, 35, "crop")
+            ? Client.client.mxcUrlToHttp(e.getContent().url, 35, 35, "crop", false, true, true)
             : null
         })
       } else {
