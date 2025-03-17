@@ -172,10 +172,10 @@ export default class FileUpload extends Component {
     const theFile = this.fileLoader.current.files[0]
     let waveformMxc
     if (this.uploadPreview?.current?.pcm) {
-      waveformMxc = await Client.client.uploadContent(JSON.stringify(this.uploadPreview?.current?.pcm), { progressHandler: this.progressHandler })
+      waveformResponse = await Client.client.uploadContent(JSON.stringify(this.uploadPreview?.current?.pcm), { progressHandler: this.progressHandler })
         .catch(this.uploadError)
     }
-    const mxc = await Client.client.uploadContent(theFile, { progressHandler: this.progressHandler })
+    const response = await Client.client.uploadContent(theFile, { progressHandler: this.progressHandler })
       .catch(this.uploadError)
     const { room_id } = await Client.client.createRoom({
       room_alias_name: this.state.alias.length > 0 
@@ -189,7 +189,7 @@ export default class FileUpload extends Component {
         type: "m.space",
         [mscResourceData]: {
           "m.file": {
-            url: mxc,
+            url: response.content_uri,
             name: theFile.name,
             mimetype: theFile.type,
             size: theFile.size
@@ -207,7 +207,7 @@ export default class FileUpload extends Component {
           ? [{
             type: populusWaveformPCM,
             state_key: "",
-            content: {mxc: waveformMxc},
+            content: {mxc: waveformResponse.content_uri},
           }] 
           : []
         )
