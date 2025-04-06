@@ -7,14 +7,12 @@ module.exports = (_, argv) => {
       main: "./src/index.js",
       "indexeddb-worker": "./src/indexeddb-worker.js"
     },
-    plugins: argv.mode === 'production'
-      ? [
-          new InjectManifest({
-            swSrc: "./src/service-worker.js",
-            maximumFileSizeToCacheInBytes: 10485760 // ten megabytes
-          })
-        ]
-      : [],
+    plugins: [
+      new InjectManifest({
+        swSrc: "./src/service-worker.js",
+        maximumFileSizeToCacheInBytes: 10485760 // ten megabytes
+      })
+    ],
     stats: {
       errorDetails: true
     },
