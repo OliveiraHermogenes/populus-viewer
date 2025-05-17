@@ -87,7 +87,7 @@ export function getFallbackHtml (content) {
 }
 
 export function getFallbackPlain (content) {
-  return getReplyPrefixPlain(content).map(l => l.slice(2))
+  return getReplyPrefixPlain(content)
 }
 
 export function getReplyPrefixHtml(content) {

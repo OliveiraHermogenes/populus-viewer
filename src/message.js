@@ -369,7 +369,7 @@ export function DisplayContent(props) {
   } else {
     return <div class={isEmoji ? "large-emoji-display" : null}>
       {isReply
-        ? Replies.stripFallbackPlain(content.body)
+        ? Replies.stripFallbackPlainString(content.body)
         : content.body}
     </div>
   }
