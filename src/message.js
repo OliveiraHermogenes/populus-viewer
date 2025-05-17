@@ -24,7 +24,7 @@ export class TextMessage extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.reactions[this.props.event.getId()] !== prevProps.reactions[prevProps.event.getId()]) {
+    if (prevProps.replacingEventId !== this.props.replacingEventId) {
       renderLatexInElement(this.messageBody.current)
       processLinks(this.messageBody.current)
     }

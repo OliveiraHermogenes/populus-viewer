@@ -320,8 +320,9 @@ class MessageEditor extends Component {
       theReplacementContent.body = Replies.getReplyPrefixPlain(this.currentContent) + theReplacementContent.body
       theReplacementContent.formatted_body = Replies.getReplyPrefixHtml(this.currentContent) + theReplacementContent.formatted_body
     }
-    const theReactionContent = {
-      body: "an edit occurred", // fallback for clients that don't handle edits. we can do something more descriptive
+    const theEditEventContent = {
+      // fallback for clients that don't handle edits.
+      body: "* ".concat(this.currentContent.body),
       msgtype: "m.text",
       "m.new_content": theReplacementContent,
       "m.relates_to": {
@@ -329,7 +330,7 @@ class MessageEditor extends Component {
         event_id: this.props.event.getId()
       }
     }
-    Client.client.sendEvent(this.props.event.getRoomId(), "m.reaction", theReactionContent).then(_ => this.props.closeEditor())
+    Client.client.sendEvent(this.props.event.getRoomId(), "m.room.message", theEditEventContent).then(_ => this.props.closeEditor())
   }
 
   popupActions = {
