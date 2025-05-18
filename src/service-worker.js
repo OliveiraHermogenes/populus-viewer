@@ -16,6 +16,11 @@ self.addEventListener("install", event => {
   );
 });
 
+self.addEventListener("activate", (event) => {
+  // bring all browser tabs under our control
+  event.waitUntil(clients.claim());
+});
+
 precacheAndRoute(self.__WB_MANIFEST)
 
 // We store the auth token in memory. IndexedDB would provide more
