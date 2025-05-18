@@ -14,7 +14,7 @@ pre { font-family: 'IBM Plex Mono', monospace; }
 * { font-family: 'Inter', sans-serif; }
 
 @supports (font-variation-settings: normal) {
-  * { font-family: 'Inter var', sans-serif; }
+  * { font-family: 'InterVariable', sans-serif; }
 }
 
 .katex * { font-family: unset }
