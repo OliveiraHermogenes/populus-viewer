@@ -33,8 +33,7 @@ export default class Client {
       baseUrl: localStorage.getItem('baseUrl'),
       userId: localStorage.getItem('userId'),
       accessToken: localStorage.getItem('accessToken'),
-      timelineSupport: true,
-      unstableClientRelationAggregation: true
+      timelineSupport: true
     }
     if (indexedDB) {
       console.log("using indexedDB")
