@@ -8,9 +8,9 @@ protocol](https://matrix.org). You can use it to read PDFs, listen to audio, or
 watch videos, and have rich discussions in the margins, with your friends,
 classmates, or scholarly collaborators.
 
-Each uploaded file is attached to a matrix space, and each annotation to the
+Each uploaded file is attached to a Matrix space, and each annotation to the
 file becomes a room within that space. Populus-Viewer has been tested with
-synapse and dendrite, but should be compatible with any spec-compliant matrix
+synapse and dendrite, but should be compatible with any spec-compliant Matrix
 server.
 
 To learn more or talk about the project, [find us on Matrix](https://matrix.to/#/#opentower:matrix.org).
@@ -37,14 +37,14 @@ Populus-Viewer currently supports:
 - Typing notifications
 - Room invitations
 - Synchronized reading positions across devices
-- Single Sign On (via Google, university, or another SSO provider), given a matrix server that supports it
+- Single Sign On (via Google, university, or another SSO provider), given a Matrix server that supports it
 
 If there's a feature supported by Matrix that you think would make for a 
 better social annotation experience, please open an issue or a PR!
 
 Populus' annotations are stored on your Matrix server in a format compatible
 with the [w3c Web Annotation Data Model](https://www.w3.org/TR/annotation-model/). 
-The details are documented in a couple of related matrix spec proposals:
+The details are documented in a couple of related Matrix spec proposals:
 
 * [MSC3775: Markup Locations for Audiovisual Media](https://github.com/matrix-org/matrix-spec-proposals/pull/3775) 
 * [MSC3752: Markup locations for text](https://github.com/matrix-org/matrix-spec-proposals/pull/3752)
@@ -54,12 +54,12 @@ The details are documented in a couple of related matrix spec proposals:
 ## Usage
 
 To try out Populus-Viewer, just point your browser at our [github pages
-instance](https://opentower.github.io/populus-viewer). You're welcome to use
-the default testing server, but be aware that this server may be torn down or
-replaced at any time. Also, be aware that the testing server isn't federated,
-so it won't be possible for users on other servers to join your discussions or
-vice-versa. We may consider running a larger public instance in the future once
-client development is further along.
+instance](https://lottec-ufpb.github.io/populus-viewer). To log in, you and
+other persons engaging in the discussions need an account in a Matrix
+server. You don't need to be all on the same server as long as they are
+federating amongst themselves. Also be aware that Populus-Viewer currently does
+not support end-to-end encryption (E2EE). Although uncommon, some servers are
+configured to enforce E2EE. In that case, Populus-Viewer may not work properly.
 
 To get started tinkering with the source code, clone this repository and then
 run:
@@ -76,5 +76,3 @@ Similar projects include:
 - [Hypothes.is](https://web.hypothes.is)
 - [PeerLibrary](https://peerlibrary.org)
 - [BookWyrm](https://joinbookwyrm.com)
-
-But I couldn't resist trying something new :)
