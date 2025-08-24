@@ -36,20 +36,6 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Function to add authorization header, as per MSC3916
-const addAuthorizationHeader = async ({ request }) => {
-  if (authToken) {
-    const headers = new Headers(request.headers);
-    headers.append('Authorization', `Bearer ${authToken}`);
-    return new Request(request, {
-      mode: 'cors',
-      credentials: 'omit',
-      headers
-    });
-  }
-  return request; // if authToken is unavailable, we return the request untouched
-};
-
 registerRoute(
   // dynamically cache thumbnails
   ({ request }) => request.url.includes('_matrix/client/v1/media/thumbnail/') && request.destination === 'image',
@@ -100,3 +86,17 @@ registerRoute(
     ]
   })
 );
+
+// Function to add authorization header, as per MSC3916
+async function addAuthorizationHeader({ request }) {
+  if (authToken) {
+    const headers = new Headers(request.headers);
+    headers.append('Authorization', `Bearer ${authToken}`);
+    return new Request(request, {
+      mode: 'cors',
+      credentials: 'omit',
+      headers
+    });
+  }
+  return request; // if authToken is unavailable, we return the request untouched
+};
