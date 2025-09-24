@@ -43,8 +43,8 @@ export default class Client {
         dbName: "populus-web-sync",
         workerScript: './indexeddb-worker.js'
       })
-      await clientOpts.store.startup()
       Client.client = Matrix.createClient(clientOpts)
+      await clientOpts.store.startup()
     } else {
       Client.client = Matrix.createClient(clientOpts)
     }
