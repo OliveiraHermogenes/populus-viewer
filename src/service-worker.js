@@ -23,18 +23,9 @@ self.addEventListener("activate", (event) => {
 
 precacheAndRoute(self.__WB_MANIFEST)
 
-// We store the auth token in memory. IndexedDB would provide more
-// permanent storage. Would probably be overengineering though. May
-// revisit latter.
-let authToken = null;
-
-// Listen for auth token from the main thread
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SET_AUTH_TOKEN') {
-    authToken = event.data.token;
-    console.log("Auth token recieved in service worker.");
-  }
-});
+// we cache auth info in memory
+let authInfo = null;
+let authInfoPromise = null;
 
 registerRoute(
   // dynamically cache thumbnails
@@ -88,15 +79,57 @@ registerRoute(
 );
 
 // Function to add authorization header, as per MSC3916
-async function addAuthorizationHeader({ request }) {
-  if (authToken) {
-    const headers = new Headers(request.headers);
-    headers.append('Authorization', `Bearer ${authToken}`);
-    return new Request(request, {
-      mode: 'cors',
-      credentials: 'omit',
-      headers
-    });
+async function addAuthorizationHeader({ request, event }) {
+  try {
+    const client = await self.clients.get(event.clientId)
+    if (client && !authInfo) {
+      authInfo = await getAuthInfo(client)
+    }
+    if (authInfo && authInfo.accessToken && authInfo.baseUrl) {
+      const requestUrl = new URL(request.url)
+      const baseUrl = new URL(authInfo.baseUrl)
+      // only inject access token in requests to the homeserver
+      if (requestUrl.origin === baseUrl.origin) {
+        const headers = new Headers(request.headers)
+        headers.append('Authorization', `Bearer ${authInfo.accessToken}`)
+        return new Request(request, {
+          mode: 'cors',
+          credentials: 'omit',
+          headers
+        });
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to get auth info:', error)
+    // fallback to original request without auth header
   }
-  return request; // if authToken is unavailable, we return the request untouched
-};
+  return request
+}
+
+// Function to request auth token from main thread
+async function getAuthInfo(client) {
+  if (authInfoPromise) return authInfoPromise;
+
+  authInfoPromise = new Promise((resolve, reject) => {
+    const authInfoTimeout = setTimeout(_ => {
+      authInfoPromise = null // reset on timeout
+      reject(new Error("Auth info request timed out"))
+    }, 1000);
+
+    const handler = (event) => {
+      if (event.data && event.data.type === "REPLY_AUTH_INFO") {
+        clearTimeout(authInfoTimeout)
+        self.removeEventListener('message', handler)
+        authInfoPromise = null // reset after success
+        resolve(event.data.auth)
+      }
+    };
+
+    self.addEventListener('message', handler);
+    client.postMessage({
+      type: "ASK_AUTH_INFO"
+    });
+  });
+
+  return authInfoPromise
+}

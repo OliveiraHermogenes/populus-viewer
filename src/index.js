@@ -40,21 +40,10 @@ class PopulusViewer extends Component {
     this.setState({ loggedIn: false })
   }
 
-  loginHandler = async _ => {
+  loginHandler = _ => {
     Client.client.on("Session.logged_out", this.logoutHandler)
     localStorage.setItem('accessToken', Client.client.getAccessToken())
     localStorage.setItem('userId', Client.client.getUserId())
-
-    // Send auth token to service worker before starting client
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      registration.active.postMessage({
-        type: 'SET_AUTH_TOKEN',
-        token: Client.client.getAccessToken(),
-      });
-      console.log("Auth token sent to service worker.");
-    }
-
     Client.client.startClient().then(_ => {
       Client.client.getMediaConfig().then(conf => Client.mediaConfig = conf)
       this.setState({
@@ -91,6 +80,20 @@ if ('serviceWorker' in navigator) {
     }).catch(registrationError => {
       console.log('[Service Worker] failed to register: ', registrationError);
     });
+  });
+  // listen for auth info requests from service worker
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === "ASK_AUTH_INFO") {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.active.postMessage({
+          type: "REPLY_AUTH_INFO",
+          auth: {
+            accessToken: localStorage.getItem('accessToken'),
+            baseUrl: localStorage.getItem('baseUrl')
+          }
+        });
+      });
+    }
   });
 }
 
