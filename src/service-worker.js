@@ -11,7 +11,7 @@ self.addEventListener("install", event => {
     caches.open("static").then(cache => {
       cache.add("https://rsms.me/inter/font-files/InterVariable.woff2?v=4.1");
       cache.add("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap");
-      cache.add("https://cdn.jsdelivr.net/npm/katex@0.13.2/dist/katex.min.css");
+      cache.add("https://cdn.jsdelivr.net/npm/katex@0.16.23/dist/katex.min.css");
     })
   );
 });
