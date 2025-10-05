@@ -13,7 +13,7 @@ export function processLinks(elt) {
         try {
           const url = new URL(link.getAttribute("href"))
           if (url.host === window.location.host && url.pathname === window.location.pathname) {
-            const hash = new URL(link.getAttribute("href")).hash
+            const hash = url.hash
             link.addEventListener("click", e => {
               e.preventDefault()
               History.push(hash.slice(1))
@@ -46,7 +46,7 @@ export function processLinks(elt) {
 async function handleLink(url, messageId) {
   const urlParts = url.hash.slice(2).split('/')
   const roomIdOrAlias = urlParts[0]
-  const eventId = urlParts[1]
+  const eventId = urlParts[1] ? urlParts[1].split('?')[0] : null
   if (roomIdOrAlias.startsWith('#')) {
     const result = await Client.client.getRoomIdForAlias(roomIdOrAlias)
     const roomId = result.room_id
@@ -73,7 +73,7 @@ async function handleLink(url, messageId) {
     const alias = encodeURIComponent(roomAlias.slice(1))
     if (alias) {
       History.setPath(4, messageId)
-      History.push(`/${alias}/${linkLocation.getResourcePosition()}/${linkLocation.getChild()}/${eventId}`)
+      History.push(`/${alias}/${linkLocation.getResourcePosition()}/${linkLocation.getChild()}/${eventId ? `${eventId}` : ''}`)
     }
   }
 }
