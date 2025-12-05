@@ -41,6 +41,8 @@
     "emoji-picker-element": "^1.8.2",
     "history": "^5.0.1",
     "katex": "^0.16.23",
+    "linkify-html": "^4.3.2",
+    "linkifyjs": "^4.3.2",
     "matrix-js-sdk": "^37.5.0",
     "png-chunks-extract": "^1.0.0",
     "preact": "^10.5.12",

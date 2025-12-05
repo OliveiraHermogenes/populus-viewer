@@ -1,5 +1,6 @@
 import { h, createRef, Fragment, Component } from 'preact';
 import sanitizeHtml from 'sanitize-html'
+import linkifyHtml from 'linkify-html'
 import { renderLatexInElement } from './latex.js'
 import { UserColor } from './utils/colors.js'
 import { sanitizeHtmlParams } from './constants.js'
@@ -366,13 +367,20 @@ export function DisplayContent(props) {
         ? sanitizeHtml(content.formatted_body, Replies.stripReply)
         : content.formatted_body, sanitizeHtmlParams)
       }} />
-  } else {
-    return <div class={isEmoji ? "large-emoji-display" : null}>
-      {isReply
-        ? Replies.stripFallbackPlainString(content.body)
-        : content.body}
-    </div>
   }
+  const plainText = isReply
+    ? Replies.stripFallbackPlainString(content.body)
+    : content.body
+  const linkedText = linkifyHtml(plainText, {
+    target: '_blank',
+    rel: 'noopener noreferrer',
+    className: 'linkified-url'
+  })
+  return <div
+    class={isEmoji ? "large-emoji-display" : null}
+    dangerouslySetInnerHTML={{
+      __html: linkedText
+    }} />
 }
 
 export class FileMessage extends Component {
