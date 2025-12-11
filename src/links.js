@@ -44,9 +44,9 @@ export function processLinks(elt) {
 }
 
 async function handleLink(url, messageId) {
-  const urlParts = url.hash.slice(2).split('/')
+  const urlParts = url.hash.slice(2).split('?')[0].split('/')
   const roomIdOrAlias = urlParts[0]
-  const eventId = urlParts[1] ? urlParts[1].split('?')[0] : null
+  const eventId = urlParts[1] ? urlParts[1] : null
   if (roomIdOrAlias.startsWith('#')) {
     const result = await Client.client.getRoomIdForAlias(roomIdOrAlias)
     const roomId = result.room_id
