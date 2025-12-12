@@ -28,7 +28,16 @@ class PopulusViewer extends Component {
     else document.documentElement.dataset.scrollbars = "hidden"
     if (Client.isResumable()) Client.initClient().then(this.loginHandler)
     else if (this.loginToken) {
-      Client.initClient().then(_ => Client.client.loginWithToken(this.loginToken, this.loginHandler))
+      Client.initClient().then(_ => Client.client.loginRequest({
+        type: "m.login.token",
+        token: this.loginToken
+      }))
+      .then(loginResponse => {
+        localStorage.setItem('accessToken', loginResponse.access_token)
+        localStorage.setItem('userId', loginResponse.user_id)
+        return Client.initClient()
+      })
+      .then(this.loginHandler)
     } else this.setState({ loggedIn: false })
   }
 

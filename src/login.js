@@ -119,7 +119,19 @@ class Login extends Component {
         ? discoverServer(this.props.server)
         : Promise.resolve(localStorage.setItem("baseUrl", serverRoot))
     ).then(() => Client.initClient())
-     .then(client => client.loginWithPassword(this.props.name.toLowerCase(), this.props.password))
+     .then(client => client.loginRequest({
+       type: "m.login.password",
+       identifier: {
+          type: "m.id.user",
+          user: this.props.name.toLowerCase()
+        },
+       password: this.props.password
+     }))
+     .then(loginResponse => {
+       localStorage.setItem('accessToken', loginResponse.access_token)
+       localStorage.setItem('userId', loginResponse.user_id)
+       return Client.initClient()
+     })
      .then(this.props.loginHandler)
      .catch(e => {
        this.setState({submitting: false})
@@ -319,7 +331,19 @@ class Registration extends Component {
       type: "m.login.recaptcha",
       response: e.detail
     }).catch(this.handleDummy)
-      .then(_ => Client.client.loginWithPassword(this.props.name.toLowerCase(), this.props.password))
+      .then(_ => Client.client.loginRequest({
+        type: "m.login.password",
+        identifier: {
+          type: "m.id.user",
+          user: this.props.name.toLowerCase()
+        },
+        password: this.props.password
+      }))
+      .then(loginResponse => {
+        localStorage.setItem('accessToken', loginResponse.access_token)
+        localStorage.setItem('userId', loginResponse.user_id)
+        return Client.initClient()
+      })
       .then(this.props.loginHandler)
       .catch(window.alert)
   }
