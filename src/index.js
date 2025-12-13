@@ -35,6 +35,7 @@ class PopulusViewer extends Component {
       .then(loginResponse => {
         localStorage.setItem('accessToken', loginResponse.access_token)
         localStorage.setItem('userId', loginResponse.user_id)
+	localStorage.setItem('deviceId', loginResponse.device_id)
         return Client.initClient()
       })
       .then(this.loginHandler)
@@ -53,6 +54,7 @@ class PopulusViewer extends Component {
     Client.client.on("Session.logged_out", this.logoutHandler)
     localStorage.setItem('accessToken', Client.client.getAccessToken())
     localStorage.setItem('userId', Client.client.getUserId())
+    localStorage.setItem('deviceId', Client.client.deviceId)
     Client.client.startClient().then(_ => {
       Client.client.getMediaConfig().then(conf => Client.mediaConfig = conf)
       this.setState({

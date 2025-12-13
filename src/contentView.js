@@ -90,7 +90,7 @@ export default class ContentView extends Component {
     if (room.roomId === this.state.room?.roomId && this.props.resourcePosition && e.getType() === lastViewed) {
       const theContent = e.getContent()
       const tryParse = parseInt(this.props.resourcePosition, 10)
-      if (Number.isInteger(tryParse) && theContent.position !== tryParse && theContent.deviceId !== Client.deviceId) {
+      if (Number.isInteger(tryParse) && theContent.position !== tryParse && theContent.deviceId !== Client.client.deviceId) {
         Toast.set(
           <Fragment>
             <h3 id="toast-header">Hey!</h3>

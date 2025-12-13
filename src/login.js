@@ -130,6 +130,7 @@ class Login extends Component {
      .then(loginResponse => {
        localStorage.setItem('accessToken', loginResponse.access_token)
        localStorage.setItem('userId', loginResponse.user_id)
+       localStorage.setItem('deviceId', loginResponse.device_id)
        return Client.initClient()
      })
      .then(this.props.loginHandler)
@@ -342,6 +343,7 @@ class Registration extends Component {
       .then(loginResponse => {
         localStorage.setItem('accessToken', loginResponse.access_token)
         localStorage.setItem('userId', loginResponse.user_id)
+	localStorage.setItem('deviceId', loginResponse.device_id)
         return Client.initClient()
       })
       .then(this.props.loginHandler)

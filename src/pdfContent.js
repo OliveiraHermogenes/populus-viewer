@@ -66,7 +66,7 @@ export default class PdfContent extends Component {
     clearTimeout(this.saveLocationTimeout)
     this.saveLocationTimeout = setTimeout(_ => {
         Client.client.setRoomAccountData(this.props.room.roomId, lastViewed, {
-          deviceId: Client.deviceId,
+          deviceId: Client.client.deviceId,
           position: this.props.pageFocused
         })
     }, 1500)
