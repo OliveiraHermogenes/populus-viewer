@@ -43,7 +43,7 @@
     "katex": "^0.16.23",
     "linkify-html": "^4.3.2",
     "linkifyjs": "^4.3.2",
-    "matrix-js-sdk": "^37.5.0",
+    "matrix-js-sdk": "^39.4.0",
     "png-chunks-extract": "^1.0.0",
     "preact": "^10.5.12",
     "preact-router": "^4.0.1",
