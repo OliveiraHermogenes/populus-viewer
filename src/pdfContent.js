@@ -4,7 +4,7 @@ import Resource from "./utils/resource.js"
 import Client from './client.js'
 import Toast from "./toast.js"
 import Location from './utils/location.js'
-import * as PDFJS from "pdfjs-dist/webpack"
+import * as PDFJS from "pdfjs-dist/webpack.mjs"
 import History from './history.js'
 import { lastViewed } from "./constants.js"
 

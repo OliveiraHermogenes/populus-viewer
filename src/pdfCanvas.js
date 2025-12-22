@@ -1,6 +1,6 @@
 import { h, createRef, Fragment, Component } from 'preact';
 import './styles/pdfView.css'
-import * as PDFJS from "pdfjs-dist/webpack"
+import * as PDFJS from "pdfjs-dist/webpack.mjs"
 import './styles/text-layer.css'
 
 export default class PdfCanvas extends Component {
@@ -105,13 +105,15 @@ export default class PdfCanvas extends Component {
     if (control !== this.controlToken) return
     if (!this.props.textLayer.current) return
     // insert the pdf text into the text layer
-    this.pendingTextRender = PDFJS.renderTextLayer({
-      textContent: text,
+    const textLayerViewport = page.getViewport({scale: 1})
+    this.props.textLayer.current.style.setProperty('--total-scale-factor', textLayerViewport.scale)
+    this.pendingTextRender = new PDFJS.TextLayer({
+      textContentSource: text,
       container: this.props.textLayer.current,
-      viewport: page.getViewport({scale: 1}),
-      textDivs: []
+      viewport: textLayerViewport
     })
-    this.pendingTextRender.promise.then(_ => { this.cleanText = this.props.textLayer.current.innerHTML })
+    await this.pendingTextRender.render()
+    this.cleanText = this.props.textLayer.current.innerHTML
   }
 
   async highlightText (word) {

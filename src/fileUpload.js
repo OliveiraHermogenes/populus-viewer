@@ -3,7 +3,7 @@ import './styles/fileUpload.css'
 import { mscResourceData, populusWaveformPCM } from "./constants.js"
 import { onlineOrAlert } from "./utils/alerts.js"
 import PdfCanvas from "./pdfCanvas.js"
-import * as PDFJS from "pdfjs-dist/webpack"
+import * as PDFJS from "pdfjs-dist/webpack.mjs"
 import * as Matrix from "matrix-js-sdk"
 import WaveSurfer from 'wavesurfer.js'
 import ToolTip from "./utils/tooltip.js"
