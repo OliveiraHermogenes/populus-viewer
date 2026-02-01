@@ -8,6 +8,7 @@ import Resource from "./utils/resource.js"
 import Client from './client.js'
 import Modal from './modal.js'
 import ManageMembership from './manageMembership.js'
+import { downloadBlob } from './utils/download.js'
 
 export default class ImageNavbar extends Component {
   constructor(props) {
@@ -38,7 +39,9 @@ export default class ImageNavbar extends Component {
   download = _ => {
     if (confirm("do you want to download the image you're annotating?")) {
       const file = new Resource(this.props.room)
-      window.open(file.httpUrl)
+      fetch(file.httpUrl)
+        .then(res => res.blob())
+        .then(blob => downloadBlob(blob, file.file?.name || "download", file.mimetype))
     }
   }
 
