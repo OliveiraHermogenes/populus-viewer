@@ -106,7 +106,6 @@ export default class PdfCanvas extends Component {
     if (!this.props.textLayer.current) return
     // insert the pdf text into the text layer
     const textLayerViewport = page.getViewport({scale: 1})
-    this.props.textLayer.current.style.setProperty('--total-scale-factor', textLayerViewport.scale)
     this.pendingTextRender = new PDFJS.TextLayer({
       textContentSource: text,
       container: this.props.textLayer.current,

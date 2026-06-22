@@ -4,6 +4,9 @@
     top: 0;
     right: 0;
     bottom: 0;
+    --total-scale-factor: 1;
+    --scale-round-x: 1px;
+    --scale-round-y: 1px;
     overflow: hidden;
     line-height:1;
     opacity: 0.2;
