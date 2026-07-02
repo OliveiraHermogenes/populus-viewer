@@ -52,7 +52,7 @@ export default class ProfileInfomation extends Component {
     if (theDisplayName) await Client.client.setDisplayName(theDisplayName)
     if (theImage && /^image/.test(theImage.type)) {
       await Client.client.uploadContent(theImage, { progressHandler: this.progressHandler })
-        .then(e => Client.client.setAvatarUrl(e))
+        .then(e => Client.client.setAvatarUrl(e.content_uri))
     } else if (!this.state.previewUrl) {
       await Client.client.setAvatarUrl("null")
       // XXX this is a pretty awful hack. Discussion at https://github.com/matrix-org/matrix-doc/issues/1674

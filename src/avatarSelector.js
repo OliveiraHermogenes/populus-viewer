@@ -47,7 +47,7 @@ export default class AvatarSelector extends Component {
               size: this.avatarImage.size,
               blurhash
             },
-            url: e
+            url: e.content_uri
           }, "")
         )
     } else if (this.state.previewUrl === null && this.props.room) { // null indicates deleted here

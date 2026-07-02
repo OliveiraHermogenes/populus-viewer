@@ -239,7 +239,7 @@ class FileUploadInput extends Component {
 
   submitDefault = async _ => {
     const theFile = this.getFile()
-    const mxc = await Client.client.uploadContent(theFile, { progressHandler: this.progressHandler }).catch(e => console.log(e))
+    const { content_uri: mxc } = await Client.client.uploadContent(theFile, { progressHandler: this.progressHandler }).catch(e => console.log(e))
     const theContent = {
       body: theFile.name,
       filename: theFile.name,
@@ -259,14 +259,14 @@ class FileUploadInput extends Component {
     // window.theVideo = theVideo
     const videoElt = await loadMediaElement(theVideo, "video")
     const thumbContent = await createThumbnail(videoElt, videoElt.videoWidth, videoElt.videoHeight, "image/jpeg")
-    const thumbMxc = await Client.client.uploadContent(thumbContent.thumbnail, {
+    const { content_uri: thumbMxc } = await Client.client.uploadContent(thumbContent.thumbnail, {
       name: `${theVideo.name}_800x600`,
       type: "image/jpeg",
       progressHandler: this.progressHandler
     })
     const blurhash = await blurhashFromFile(thumbContent.thumbnail)
     console.log("upload video")
-    const videoMxc = await Client.client.uploadContent(theVideo, { progressHandler: this.progressHandler })
+    const { content_uri: videoMxc } = await Client.client.uploadContent(theVideo, { progressHandler: this.progressHandler })
     const duration = Math.round(videoElt.duration * 1000)
     const theContent = {
       body: theVideo.name,
@@ -290,7 +290,7 @@ class FileUploadInput extends Component {
   submitAudio = async _ => {
     const theAudio = this.getFile()
     console.log("upload audio")
-    const audioMxc = await Client.client.uploadContent(theAudio, { progressHandler: this.progressHandler })
+    const { content_uri: audioMxc } = await Client.client.uploadContent(theAudio, { progressHandler: this.progressHandler })
     const duration = Math.round(this.mediaElement.duration * 1000)
     const theContent = {
       body: theAudio.name,
@@ -312,12 +312,12 @@ class FileUploadInput extends Component {
     const blurhash = await blurhashFromFile(theImage)
     const thumbType = theImage.type === "image/jpeg" ? "image/jpeg" : "image/png"
     const thumbContent = await createThumbnail(img, width, height, thumbType)
-    const thumbMxc = await Client.client.uploadContent(thumbContent.thumbnail, {
+    const { content_uri: thumbMxc } = await Client.client.uploadContent(thumbContent.thumbnail, {
       name: `${theImage.name}_800x600`,
       type: thumbType,
       progressHandler: this.progressHandler
     })
-    const imageMxc = await Client.client.uploadContent(theImage, { progressHandler: this.progressHandler })
+    const { content_uri: imageMxc } = await Client.client.uploadContent(theImage, { progressHandler: this.progressHandler })
     const theContent = {
       body: theImage.name,
       info: {
@@ -576,14 +576,14 @@ class RecordVideoInput extends RecordMediaInput {
       const videoElt = this.mediaPreview.current
       const thumbContent = await createThumbnail(videoElt, videoElt.videoWidth, videoElt.videoHeight, "image/jpeg")
       this.setState({uploading: "thumbnail"})
-      const thumbMxc = await Client.client.uploadContent(thumbContent.thumbnail, {
+      const { content_uri: thumbMxc } = await Client.client.uploadContent(thumbContent.thumbnail, {
         name: `${Client.client.getUserId()}_${Date.now()}_thumbnail`,
         type: "image/jpeg",
         progressHandler: this.progressHandler
       })
       const blurhash = await blurhashFromFile(thumbContent.thumbnail)
       this.setState({uploading: "video"})
-      const videoMxc = await Client.client.uploadContent(this.recordingBlob, { progressHandler: this.progressHandler })
+      const { content_uri: videoMxc } = await Client.client.uploadContent(this.recordingBlob, { progressHandler: this.progressHandler })
       this.setState({uploading: ""})
       const duration = Math.round(videoElt.duration * 1000)
       const theContent = {
@@ -642,7 +642,7 @@ class RecordAudioInput extends RecordMediaInput {
     if (this.state.recording === "done") {
       const audioElt = this.mediaPreview.current
       const duration = Math.round(audioElt.duration * 1000)
-      const audioMxc = await Client.client.uploadContent(this.recordingBlob, { progressHandler: this.progressHandler })
+      const { content_uri: audioMxc } = await Client.client.uploadContent(this.recordingBlob, { progressHandler: this.progressHandler })
       const theContent = {
         body: `${Client.client.getUserId()}_${Date.now()}`,
         info: {
