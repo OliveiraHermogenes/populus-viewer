@@ -1,4 +1,4 @@
-import { h, createRef, Fragment, Component } from 'preact';
+import { h, createRef, Fragment, Component } from 'preact'
 import sanitizeHtml from 'sanitize-html'
 import linkifyHtml from 'linkify-html'
 import { renderLatexInElement } from './latex.js'
@@ -19,12 +19,12 @@ import * as Icons from './icons.js'
 import './styles/message.css'
 
 export class TextMessage extends Component {
-  componentDidMount() {
+  componentDidMount () {
     renderLatexInElement(this.messageBody.current)
     processLinks(this.messageBody.current)
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate (prevProps) {
     if (prevProps.replacingEventId !== this.props.replacingEventId) {
       renderLatexInElement(this.messageBody.current)
       processLinks(this.messageBody.current)
@@ -33,7 +33,7 @@ export class TextMessage extends Component {
 
   messageBody = createRef()
 
-  render(props) {
+  render (props) {
     const content = this.props.event.getContent()
     const isReply = Replies.isReply(content)
     return <MessageFrame
@@ -51,12 +51,12 @@ export class TextMessage extends Component {
 }
 
 export class EmoteMessage extends Component {
-  componentDidMount() {
+  componentDidMount () {
     renderLatexInElement(this.messageBody.current)
     processLinks(this.messageBody.current)
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate (prevProps) {
     if (this.props.reactions[this.props.event.getId()] !== prevProps.reactions[prevProps.event.getId()]) {
       renderLatexInElement(this.messageBody.current)
       processLinks(this.messageBody.current)
@@ -69,7 +69,7 @@ export class EmoteMessage extends Component {
 
   userColor = new UserColor(this.props.event.getSender())
 
-  render(props) {
+  render (props) {
     const content = props.event.getContent()
     return <MessageFrame
       displayOnly={props.displayOnly}
@@ -105,16 +105,16 @@ export class AnnotationMessage extends Component {
 
   mediaRect = this.location?.getMediaRect()
 
-  render(props) {
+  render (props) {
     const locationType = this.location.getType()
     if (!locationType) return
     return <MessageFrame
-      styleOverride={this.hasFocus() ? {background: this.userColor.ultralight, ... this.userColor.styleVariables} : null }
+      styleOverride={this.hasFocus() ? { background: this.userColor.ultralight, ...this.userColor.styleVariables } : null }
       reactions={props.reactions}
       event={props.event}
       getCurrentEdit={this.getCurrentEdit}>
       <div onClick={this.handleClick} class="message-body">
-          { locationType === "highlight" || locationType == "text" 
+          { locationType === 'highlight' || locationType === 'text'
             ? <span class="annotation-banner">
                   <span>On </span>
                   <a onClick={this.handleLinkClick}
@@ -122,9 +122,9 @@ export class AnnotationMessage extends Component {
                     page {this.location.getPageIndex()}
                   </a>:
               </span>
-            : locationType == "media-fragment"
-            ? <span class="annotation-banner">
-                {props.resource?.mimetype?.match(/^image/) 
+            : locationType === 'media-fragment'
+              ? <span class="annotation-banner">
+                {props.resource?.mimetype?.match(/^image/)
                   ? <Fragment>
                     <span>Image selection at </span>
                     <a onClick={this.handleLinkClick}
@@ -141,7 +141,7 @@ export class AnnotationMessage extends Component {
                   </Fragment>
                 }
               </span>
-            : null
+              : null
           }
           <LocationPreview resource={props.resource} location={this.location} />
         </div>
@@ -151,35 +151,35 @@ export class AnnotationMessage extends Component {
 
 class ReplyPreview extends Component {
   // eventually will want a mechanism for refreshing on receipt of edits
-  constructor(props) {
+  constructor (props) {
     super(props)
-    this.state = {truncate: true}
+    this.state = { truncate: true }
   }
-  
-  componentDidMount() {
+
+  componentDidMount () {
     this.getLiveEvent()
     renderLatexInElement(this.replyPreview.current)
     processLinks(this.replyPreview.current)
   }
 
-  componentDidUpdate() {
+  componentDidUpdate () {
     this.getLiveEvent()
     renderLatexInElement(this.replyPreview.current)
     processLinks(this.replyPreview.current)
   }
 
-  async getLiveEvent() {
+  async getLiveEvent () {
     if (!this.state.liveEvent) {
-      const inReplyToId = this.props.event.getContent()["m.relates_to"]["m.in_reply_to"].event_id
+      const inReplyToId = this.props.event.getContent()['m.relates_to']['m.in_reply_to'].event_id
       const roomId = this.props.event.getRoomId()
       const theRoom = Client.client.getRoom(roomId)
       if (!theRoom) return // room state not ready
       const inReplyTo = theRoom.findEventById(inReplyToId)
       if (inReplyTo) this.setState({ liveEvent: inReplyTo })
       try {
-        console.log("trying to retrive live event")
+        console.log('trying to retrive live event')
         await Client.client.getEventTimeline(theRoom.getUnfilteredTimelineSet(), inReplyToId)
-        console.log("retrived")
+        console.log('retrived')
         this.setState({ liveEvent: theRoom.findEventById(inReplyToId) })
       } catch (e) {
         // the above uses the event-context route, which isn't implemented yet in Dendrite:
@@ -200,21 +200,21 @@ class ReplyPreview extends Component {
   fromLiveEvent = _ => {
     const content = this.state.liveEvent?.getContent()
     if (!content) return
-    const hasHtml = (content.format === "org.matrix.custom.html") && content.formatted_body
+    const hasHtml = (content.format === 'org.matrix.custom.html') && content.formatted_body
     const isReply = Replies.isReply(content)
-    const replyUrl = content.msgtype 
+    const replyUrl = content.msgtype
       ? `${window.location.origin}${window.location.pathname}#/` +
         `${encodeURIComponent(this.props.resourceAlias)}/_/` +
         `${this.state.liveEvent.getRoomId()}/` +
         `${this.state.liveEvent.getId()}`
-      : null //redacted
+      : null // redacted
     const senderColors = new UserColor(this.state.liveEvent.getSender())
     let displayBody
     if (!this.state.liveEvent.getContent().msgtype) {
       displayBody = <div class="redacted-preview">Original Message Deleted</div>
     } else {
       switch (this.state.liveEvent.getContent().msgtype) {
-        case "m.video": {
+        case 'm.video': {
           const info = this.state.liveEvent.getContent()?.info.thumbnail_info || props.event?.getContent()?.info
           const blurhash = this.state.liveEvent.getContent()?.info?.blurhash
           const thumbUrl = this.state.liveEvent.getContent().info.thumbnail_url
@@ -228,15 +228,15 @@ class ReplyPreview extends Component {
               src={Client.client.getHttpUriForMxcFromHS(this.state.liveEvent.getContent().url)} />
             <BlurhashCanvas height={info.h} width={info.w} blurhash={blurhash} class="media-message-blurhash"/>
           </Fragment>
-          break;
+          break
         }
-        case "m.image": {
+        case 'm.image': {
           const info = this.state.liveEvent.getContent()?.info.thumbnail_info || props.event?.getContent()?.info
           const blurhash = this.state.liveEvent.getContent()?.info?.blurhash
           const thumbUrl = this.state.liveEvent.getContent().info.thumbnail_url
           const url = thumbUrl ? Client.client.getHttpUriForMxcFromHS(thumbUrl) : null
           displayBody = <Fragment>
-            <img 
+            <img
               onLoad={this.handleLoad}
               loading="lazy"
               class="media-message-thumbnail"
@@ -244,15 +244,15 @@ class ReplyPreview extends Component {
             />
             <BlurhashCanvas height={info.h} width={info.w} blurhash={blurhash} class="media-message-blurhash"/>
           </Fragment>
-          break;
+          break
         }
-        case "m.audio": {
+        case 'm.audio': {
           displayBody = <audio
             controls
             src={Client.client.getHttpUriForMxcFromHS(this.state.liveEvent.getContent().url)} />
-          break;
+          break
         }
-        case "m.file": {
+        case 'm.file': {
           displayBody = <div class="file-upload">
             <span>{Icons.file}</span>
             <a href={Client.client.getHttpUriForMxcFromHS(this.state.liveEvent.getContent().url)}>
@@ -260,29 +260,29 @@ class ReplyPreview extends Component {
             </a>
             <span>{formatBytes(this.state.liveEvent.getContent().info?.size)}</span>
           </div>
-          break;
+          break
         }
-        case "m.text": {
+        case 'm.text': {
           const displayPlain = isReply ? Replies.stripFallbackPlainString(content.body) : content.body
           const truncate = displayPlain.length > 375 && this.state.truncate
           if (isReply && hasHtml) {
             const displayHtml = sanitizeHtml(content.formatted_body, Replies.stripReply)
-            displayBody = <div onclick={this.clearTruncate} data-truncate-reply={truncate} dangerouslySetInnerHTML={{__html: displayHtml}} />
+            displayBody = <div onclick={this.clearTruncate} data-truncate-reply={truncate} dangerouslySetInnerHTML={{ __html: displayHtml }} />
           } else if (hasHtml) {
-            displayBody = <div onclick={this.clearTruncate} data-truncate-reply={truncate}dangerouslySetInnerHTML={{__html: content.formatted_body}} />
+            displayBody = <div onclick={this.clearTruncate} data-truncate-reply={truncate}dangerouslySetInnerHTML={{ __html: content.formatted_body }} />
           } else {
             displayBody = <div onclick={this.clearTruncate} data-truncate-reply={truncate}>{displayPlain}</div>
           }
-          break;
+          break
         }
-        case "m.notice": {
+        case 'm.notice': {
           const displayPlain = isReply ? Replies.stripFallbackPlainString(content.body) : content.body
           const truncate = displayPlain.length > 375 && this.state.truncate
           if (isReply && hasHtml) {
             const displayHtml = sanitizeHtml(content.formatted_body, Replies.stripReply)
-            displayBody = <div onclick={this.clearTruncate} data-truncate-reply={truncate} dangerouslySetInnerHTML={{__html: displayHtml}} />
+            displayBody = <div onclick={this.clearTruncate} data-truncate-reply={truncate} dangerouslySetInnerHTML={{ __html: displayHtml }} />
           } else if (hasHtml) {
-            displayBody = <div onclick={this.clearTruncate} data-truncate-reply={truncate} dangerouslySetInnerHTML={{__html: content.formatted_body}} />
+            displayBody = <div onclick={this.clearTruncate} data-truncate-reply={truncate} dangerouslySetInnerHTML={{ __html: content.formatted_body }} />
           } else {
             displayBody = <div onclick={this.clearTruncate} data-truncate-reply={truncate}>{displayPlain}</div>
           }
@@ -302,30 +302,30 @@ class ReplyPreview extends Component {
   }
 
   clearTruncate = _ => {
-    this.setState({truncate: false})
+    this.setState({ truncate: false })
   }
 
   fallbackPreview = _ => {
     const content = this.props.event.getContent()
-    const hasHtml = (content.format === "org.matrix.custom.html") && content.formatted_body
-    const style = {'--user_light': 'lightgray'}
+    const hasHtml = (content.format === 'org.matrix.custom.html') && content.formatted_body
+    const style = { '--user_light': 'lightgray' }
     return hasHtml
-      ? <div style={style} class="reply-preview reply-fallback" dangerouslySetInnerHTML={{__html: Replies.getFallbackHtml(content)}} />
+      ? <div style={style} class="reply-preview reply-fallback" dangerouslySetInnerHTML={{ __html: Replies.getFallbackHtml(content) }} />
       : <div style={style} class="reply-preview reply-fallback">{Replies.getFallbackPlain(content)}</div>
   }
 
-  render(_props, state) {
+  render (_props, state) {
     if (state.liveEvent) return this.fromLiveEvent()
     return this.fallbackPreview()
   }
 }
 
 export class NoticeMessage extends Component {
-  componentDidMount() {
+  componentDidMount () {
     renderLatexInElement(this.messageBody.current)
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate (prevProps) {
     if (this.props.reactions[this.props.event.getId()] !== prevProps.reactions[prevProps.event.getId()]) {
       renderLatexInElement(this.messageBody.current)
     }
@@ -334,13 +334,13 @@ export class NoticeMessage extends Component {
   messageBody = createRef()
 
   noticeStyle = {
-    "--user_ultralight": "hsl(0,0%, 95%)",
-    "--user_light": "hsl(0,0%, 80%)",
-    "--user_solid": "hsl(0,0%, 50%)",
-    "--user_dark": "hsl(0,0%, 20%)"
+    '--user_ultralight': 'hsl(0,0%, 95%)',
+    '--user_light': 'hsl(0,0%, 80%)',
+    '--user_solid': 'hsl(0,0%, 50%)',
+    '--user_dark': 'hsl(0,0%, 20%)'
   }
 
-  render(props) {
+  render (props) {
     const content = props.event.getContent()
     const isReply = Replies.isReply(content)
     return <MessageFrame
@@ -357,15 +357,16 @@ export class NoticeMessage extends Component {
   }
 }
 
-export function DisplayContent(props) {
+export function DisplayContent (props) {
   const content = props.content
   const isReply = Replies.isReply(content)
   const isEmoji = /^\s*(\p{Extended_Pictographic}\p{Emoji_Component}*){1,3}\s*$/u.test(content.body)
-  if ((!isEmoji && content.format === "org.matrix.custom.html") && content.formatted_body) {
+  if ((!isEmoji && content.format === 'org.matrix.custom.html') && content.formatted_body) {
     return <div
-      dangerouslySetInnerHTML={{__html: sanitizeHtml(isReply
-        ? sanitizeHtml(content.formatted_body, Replies.stripReply)
-        : content.formatted_body, sanitizeHtmlParams)
+      dangerouslySetInnerHTML={{
+        __html: sanitizeHtml(isReply
+          ? sanitizeHtml(content.formatted_body, Replies.stripReply)
+          : content.formatted_body, sanitizeHtmlParams)
       }} />
   }
   const plainText = isReply
@@ -377,7 +378,7 @@ export function DisplayContent(props) {
     className: 'linkified-url'
   })
   return <div
-    class={isEmoji ? "large-emoji-display" : null}
+    class={isEmoji ? 'large-emoji-display' : null}
     dangerouslySetInnerHTML={{
       __html: linkedText
     }} />
@@ -390,7 +391,7 @@ export class FileMessage extends Component {
 
   url = Client.client.getHttpUriForMxcFromHS(this.props.event.getContent().url)
 
-  render(props) {
+  render (props) {
     const filename = props.event.getContent().filename
     const size = props.event.getContent().info?.size
     return <MessageFrame
@@ -410,7 +411,6 @@ export class FileMessage extends Component {
 }
 
 export class ImageMessage extends Component {
-
   userColor = new UserColor(this.props.event.getSender())
 
   isMe = this.props.event.getSender() === Client.client.getUserId()
@@ -427,7 +427,7 @@ export class ImageMessage extends Component {
   handleLoad = _ => this.setState({ loaded: true })
 
   // TODO need some sort of modal popup providing a preview of the full video
-  render(props, state) {
+  render (props, state) {
     const info = props.event.getContent()?.info.thumbnail_info || props.event?.getContent()?.info
     const blurhash = props.event?.getContent()?.info?.blurhash
     return <MessageFrame
@@ -436,7 +436,7 @@ export class ImageMessage extends Component {
       canRedact={props.canRedact}
       event={props.event}>
         <div class="message-body media-message" data-media-message-loaded={state.loaded}>
-          <img 
+          <img
             onclick={this.showPreview}
             onLoad={this.handleLoad}
             loading="lazy"
@@ -463,7 +463,7 @@ export class VideoMessage extends Component {
 
   url = Client.client.getHttpUriForMxcFromHS(this.content.url)
 
-  render(props, state) {
+  render (props, state) {
     const info = props.event.getContent()?.info.thumbnail_info || props.event?.getContent()?.info
     const blurhash = props.event?.getContent()?.info?.blurhash
     return <MessageFrame
@@ -491,9 +491,9 @@ export class AudioMessage extends Component {
 
   content = this.props.event.getContent()
 
-  url= Client.client.getHttpUriForMxcFromHS(this.content.url)
+  url = Client.client.getHttpUriForMxcFromHS(this.content.url)
 
-  render(props) {
+  render (props) {
     return <MessageFrame
       displayOnly={props.displayOnly}
       reactions={props.reactions}

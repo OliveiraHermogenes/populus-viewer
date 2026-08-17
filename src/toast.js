@@ -3,15 +3,15 @@ import './styles/toast.css'
 import * as Icons from './icons.js'
 
 export default class Toast extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     Toast.hide = this.hideToast
     Toast.set = this.setContent
   }
 
-  hideToast = _ => this.setState({content: null})
+  hideToast = _ => this.setState({ content: null })
 
-  setContent = content => this.setState({content})
+  setContent = content => this.setState({ content })
 
   render (_, state) {
     return state.content

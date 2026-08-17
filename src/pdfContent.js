@@ -1,15 +1,14 @@
-import { h, createRef, Fragment, Component } from 'preact';
+import { h, createRef, Fragment, Component } from 'preact'
 import PdfPage from './pdfPage.js'
-import Resource from "./utils/resource.js"
+import Resource from './utils/resource.js'
 import Client from './client.js'
-import Toast from "./toast.js"
+import Toast from './toast.js'
 import Location from './utils/location.js'
-import * as PDFJS from "pdfjs-dist/webpack.mjs"
+import * as PDFJS from 'pdfjs-dist/webpack.mjs'
 import History from './history.js'
-import { lastViewed } from "./constants.js"
+import { lastViewed } from './constants.js'
 
 export default class PdfContent extends Component {
-  
   // we store downloaded PDFs here in order to avoid excessive downloads.
   // Could alternatively use localstorage or some such eventually. We don't
   // use preact state since changes here aren't relevent to UI.
@@ -17,18 +16,18 @@ export default class PdfContent extends Component {
 
   // we expose this method so that we can unformly sanatize position-strings
   // before passing them to components that expect timestamps
-  static positionToPage(pos, room) {
+  static positionToPage (pos, room) {
     const tryLastPosition = room?.getAccountData(lastViewed)?.getContent().position
     const tryParse = parseInt(pos, 10)
     // need isInteger because 0 is falsey
     return Number.isInteger(tryParse)
-      ? tryParse 
+      ? tryParse
       : Number.isInteger(tryLastPosition)
-      ? tryLastPosition
-      : 1
+        ? tryLastPosition
+        : 1
   }
 
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       showSecondary: false,
@@ -43,12 +42,12 @@ export default class PdfContent extends Component {
     })
   }
 
-  componentDidMount() { 
+  componentDidMount () {
     this.fetchPdf()
     // fetch will fail if the initial sync isn't complete, but that should be handled by the splash page
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate (prevProps) {
     if (this.props.resourceLength !== prevProps.resourceLength || // on length becoming known
       prevProps.pageFocused !== this.props.pageFocused // on page focus changing
     ) {
@@ -65,21 +64,21 @@ export default class PdfContent extends Component {
     // we only save if you've stopped zipping around for more than a second
     clearTimeout(this.saveLocationTimeout)
     this.saveLocationTimeout = setTimeout(_ => {
-        Client.client.setRoomAccountData(this.props.room.roomId, lastViewed, {
-          deviceId: Client.client.deviceId,
-          position: this.props.pageFocused
-        })
+      Client.client.setRoomAccountData(this.props.room.roomId, lastViewed, {
+        deviceId: Client.client.deviceId,
+        position: this.props.pageFocused
+      })
     }, 1500)
   }
 
   handleBadPage = _ => {
     if (this.props.resourceLength) {
-      console.log("fired")
+      console.log('fired')
       const newPage = this.props.pageFocused < this.props.resourceLength ? 1 : this.props.resourceLength
-      History.replace(`/${encodeURIComponent(this.props.resourceAlias)}` + 
-        `/${newPage}` + 
-        `${this.props.roomFocused ? `/${this.props.roomFocused}` : ""}` +
-        `${this.props.eventFocused ? `/${this.props.eventFocused}` : ""}`
+      History.replace(`/${encodeURIComponent(this.props.resourceAlias)}` +
+        `/${newPage}` +
+        `${this.props.roomFocused ? `/${this.props.roomFocused}` : ''}` +
+        `${this.props.eventFocused ? `/${this.props.eventFocused}` : ''}`
       )
     }
   }
@@ -97,11 +96,11 @@ export default class PdfContent extends Component {
     : 0
 
   setMainPageDimensions = (mainPageHeightPx, mainPageWidthPx) => {
-    this.setState({mainPageHeightPx, mainPageWidthPx}, this.refreshDimensions)
+    this.setState({ mainPageHeightPx, mainPageWidthPx }, this.refreshDimensions)
   }
 
   setSecondaryPageDimensions = (secondaryPageHeightPx, secondaryPageWidthPx) => {
-    this.setState({secondaryPageHeightPx, secondaryPageWidthPx}, this.refreshDimensions)
+    this.setState({ secondaryPageHeightPx, secondaryPageWidthPx }, this.refreshDimensions)
   }
 
   refreshDimensions = _ => this.props.setContentDimensions(
@@ -110,7 +109,7 @@ export default class PdfContent extends Component {
   )
 
   toggleSecondary = _ => {
-    this.setState(oldState => { return {showSecondary: !oldState.showSecondary} },
+    this.setState(oldState => { return { showSecondary: !oldState.showSecondary } },
       this.refreshDimensions
     )
   }
@@ -146,7 +145,7 @@ export default class PdfContent extends Component {
         })
         .then(array => PDFJS.getDocument(array).promise)
         .catch(this.catchFetchPdfError)
-    } else { console.log(`found pdf for ${this.props.room.name} in store` ) }
+    } else { console.log(`found pdf for ${this.props.room.name} in store`) }
     if (this.errorCondition) return
     this.setState({
       pdfPromise: PdfContent.PDFStore[thePdf.url]
@@ -154,17 +153,17 @@ export default class PdfContent extends Component {
       .then(pdf => this.props.setTotalPages(pdf.numPages))
       .then(this.resolveFetch)
       .then(this.gatherText)
-    ) 
+    )
   }
 
-  gatherText = async  _ => {
+  gatherText = async _ => {
     if (this.props.setPdfText) {
       const pdf = await this.state.pdfPromise
       const pdfText = {}
       for (let i = 1; i < pdf.numPages + 1; i++) {
         const page = await pdf.getPage(i)
         const content = await page.getTextContent()
-        pdfText[i] = content.items.map(item => item.str).join(" ")
+        pdfText[i] = content.items.map(item => item.str).join(' ')
       }
       this.props.setPdfText(pdfText)
     }
@@ -172,10 +171,10 @@ export default class PdfContent extends Component {
 
   releasePin = e => {
     let page
-    if (this.mainPage.current.isTarget(e)) page = "primary"
-    else if (this.secondaryPage?.current?.isTarget(e)) page = "secondary"
+    if (this.mainPage.current.isTarget(e)) page = 'primary'
+    else if (this.secondaryPage?.current?.isTarget(e)) page = 'secondary'
     else {
-      document.removeEventListener("click", this.releasePin)
+      document.removeEventListener('click', this.releasePin)
       this.props.setPindropMode(null)
       return
     }
@@ -185,7 +184,7 @@ export default class PdfContent extends Component {
     const theY = e.altKey
       ? Math.round((e.offsetY - 14) / 14) * 14
       : e.offsetY - 14
-    this.props.setPindropMode({x: theX, y: theY, page})
+    this.props.setPindropMode({ x: theX, y: theY, page })
   }
 
   commitHighlight = _ => {
@@ -201,15 +200,15 @@ export default class PdfContent extends Component {
   }
 
   commitPin = (theX, theY, thePage) => {
-    if (thePage === "primary") thePage = this.mainPage.current
-    else if (thePage === "secondary") thePage = this.secondaryPage.current
+    if (thePage === 'primary') thePage = this.mainPage.current
+    else if (thePage === 'secondary') thePage = this.secondaryPage.current
     else return
     thePage.commitPin(theX, theY)
       .then(fakeEvent => {
         this.props.setFocus(new Location(fakeEvent))
         this.props.showChat()
       }).catch(e => alert(e))
-    document.removeEventListener("click", this.releasePin)
+    document.removeEventListener('click', this.releasePin)
     this.props.setPindropMode(null)
   }
 
@@ -228,11 +227,11 @@ export default class PdfContent extends Component {
     return this.mainPage.current.hasSelection() || this.secondaryPage?.current?.hasSelection()
   }
 
-  render(props, state) {
+  render (props, state) {
     const secondaryPageVisible = state.showSecondary && props.pageFocused < props.totalPages
-    const primaryPindrop = props.pindropMode?.page === "primary" ? props.pindropMode : null
-    const secondaryPindrop = props.pindropMode?.page === "secondary" ? props.pindropMode : null
-    const hideUntilWidthAvailable = { visibility: state.mainPageHeightPx ? null : "hidden" }
+    const primaryPindrop = props.pindropMode?.page === 'primary' ? props.pindropMode : null
+    const secondaryPindrop = props.pindropMode?.page === 'secondary' ? props.pindropMode : null
+    const hideUntilWidthAvailable = { visibility: state.mainPageHeightPx ? null : 'hidden' }
     return <div style={hideUntilWidthAvailable} id="document-view">
       <PdfPage
         filteredAnnotationContents={props.filteredAnnotationContents}
@@ -240,7 +239,7 @@ export default class PdfContent extends Component {
         pageFocused={props.pageFocused}
         pdfHeightPx={state.mainPageHeightPx}
         pdfWidthPx={state.mainPageWidthPx}
-        fixedSide={secondaryPageVisible ? "left" : null}
+        fixedSide={secondaryPageVisible ? 'left' : null}
         hasFetched={this.hasFetched}
         pdfPromise={state.pdfPromise}
         pindropMode={primaryPindrop}
@@ -257,7 +256,7 @@ export default class PdfContent extends Component {
         ? <PdfPage
           filteredAnnotationContents={props.filteredAnnotationContents}
           focus={props.focus}
-          fixedSide={secondaryPageVisible ? "right" : null}
+          fixedSide={secondaryPageVisible ? 'right' : null}
           hasFetched={this.hasFetched}
           pdfPromise={state.pdfPromise}
           pageFocused={props.pageFocused + 1}

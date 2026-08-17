@@ -1,6 +1,6 @@
 import * as Matrix from 'matrix-js-sdk'
 
-function getRoomWithState(roomId) {
+function getRoomWithState (roomId) {
   const checkForState = resolve => _ => {
     const room = this.getRoom(roomId)
     if (room) resolve(room)
@@ -9,14 +9,14 @@ function getRoomWithState(roomId) {
   return new Promise(resolve => checkForState(resolve)())
 }
 
-function getHttpUriForMxcFromHS(mxc, width, height, resizeMethod, allowDirectLinks, allowRedirects, useAuthentication) {
+function getHttpUriForMxcFromHS (mxc, width, height, resizeMethod, allowDirectLinks) {
   return Matrix.getHttpUriForMxc(this.getHomeserverUrl(), mxc, width, height, resizeMethod, allowDirectLinks, true, true)
 }
 
 export default class Client {
   static client
 
-  static isResumable() {
+  static isResumable () {
     return !!localStorage.getItem('accessToken') &&
            !!localStorage.getItem('userId') &&
            !!localStorage.getItem('baseUrl')
@@ -24,7 +24,7 @@ export default class Client {
 
   static async initClient () {
     let indexedDB
-    try { indexedDB = window.indexedDB; } catch (e) {}
+    try { indexedDB = window.indexedDB } catch {}
     const clientOpts = {
       baseUrl: localStorage.getItem('baseUrl'),
       userId: localStorage.getItem('userId'),
@@ -33,11 +33,11 @@ export default class Client {
       timelineSupport: true
     }
     if (indexedDB) {
-      console.log("using indexedDB")
+      console.log('using indexedDB')
       clientOpts.store = new Matrix.IndexedDBStore({
         indexedDB,
         localStorage,
-        dbName: "populus-web-sync",
+        dbName: 'populus-web-sync',
         workerScript: './indexeddb-worker.js'
       })
       Client.client = Matrix.createClient(clientOpts)
@@ -47,12 +47,12 @@ export default class Client {
     }
     Client.client.getRoomWithState = getRoomWithState.bind(Client.client)
     Client.client.getHttpUriForMxcFromHS = getHttpUriForMxcFromHS.bind(Client.client)
-    const notifTimelineSet = new Matrix.EventTimelineSet(null, { timelineSupport: true });
-    notifTimelineSet.getLiveTimeline().setPaginationToken("", Matrix.EventTimeline.BACKWARDS);
+    const notifTimelineSet = new Matrix.EventTimelineSet(null, { timelineSupport: true })
+    notifTimelineSet.getLiveTimeline().setPaginationToken('', Matrix.EventTimeline.BACKWARDS)
     // XXX: following
     // https://github.com/matrix-org/matrix-react-sdk/blob/2d1d42b90e8418017348cae1bd17a8a92340fdfb/src/MatrixClientPeg.ts#L296
     // for original pagination token though this might not be correct.
-    Client.client.setNotifTimelineSet(notifTimelineSet);
+    Client.client.setNotifTimelineSet(notifTimelineSet)
     return Client.client
   }
 

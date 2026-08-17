@@ -12,8 +12,8 @@ export function toastError (headline) {
   }
 }
 
-export function onlineOrAlert() {
-  if (Client.client.getSyncState() === "ERROR") {
+export function onlineOrAlert () {
+  if (Client.client.getSyncState() === 'ERROR') {
     Toast.set(<Fragment>
       <h3 id="toast-header">It looks like you're offline</h3>
       <div>

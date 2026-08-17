@@ -1,5 +1,5 @@
-import { h, Component, createRef } from 'preact';
-import * as Matrix from "matrix-js-sdk"
+import { h, Component, createRef } from 'preact'
+import * as Matrix from 'matrix-js-sdk'
 import { UserColor } from './utils/colors.js'
 import { TextMessage } from './message.js'
 import { isUnread } from './utils/unread.js'
@@ -11,7 +11,7 @@ import History from './history.js'
 import * as Icons from './icons.js'
 
 export default class NotificationListing extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       events: [],
@@ -24,19 +24,19 @@ export default class NotificationListing extends Component {
 
   scrollAnchor = createRef()
 
-  componentDidMount() {
-    document.addEventListener("scroll", this.handleScroll)
-    Client.client.on("Room", this.handleRoom)
-    Client.client.on("RoomState.events", this.handleRoom) // needed to update when creation event arrives
-    Client.client.on("Room.timeline", this.handleTimeline) // this also handles redactions, although they have their own event.
+  componentDidMount () {
+    document.addEventListener('scroll', this.handleScroll)
+    Client.client.on('Room', this.handleRoom)
+    Client.client.on('RoomState.events', this.handleRoom) // needed to update when creation event arrives
+    Client.client.on('Room.timeline', this.handleTimeline) // this also handles redactions, although they have their own event.
     this.notificationPromise.then(this.updateEvents).then(this.tryBackfill)
   }
 
-  componentWillUnmount() {
-    document.removeEventListener("scroll", this.handleScroll)
-    Client.client.off("Room", this.handleRoom)
-    Client.client.off("RoomState.events", this.handleRoom)
-    Client.client.off("Room.timeline", this.handleTimeline)
+  componentWillUnmount () {
+    document.removeEventListener('scroll', this.handleScroll)
+    Client.client.off('Room', this.handleRoom)
+    Client.client.off('RoomState.events', this.handleRoom)
+    Client.client.off('Room.timeline', this.handleTimeline)
   }
 
   updateEvents = _ => this.setState({ events: this.notificationWindow.getEvents().reverse() })
@@ -49,7 +49,7 @@ export default class NotificationListing extends Component {
       } else {
         this.notificationWindow.paginate(Matrix.EventTimeline.BACKWARDS, 10)
           .then(_ => setTimeout(_ => {
-            this.setState({events: this.notificationWindow.getEvents().reverse()}, this.tryBackfill)
+            this.setState({ events: this.notificationWindow.getEvents().reverse() }, this.tryBackfill)
           }, 200))
       }
     }
@@ -84,23 +84,23 @@ export default class NotificationListing extends Component {
 
   toNotification = ev => {
     switch (ev.getContent().msgtype) {
-      case "m.text" : return <TextNotification event={ev} key={ev.getId()} />
+      case 'm.text' : return <TextNotification event={ev} key={ev.getId()} />
       default : return null
     }
   }
 
-  getInvites() {
-    const invites = Client.client.getVisibleRooms().filter(room => room.getMyMembership() === "invite")
+  getInvites () {
+    const invites = Client.client.getVisibleRooms().filter(room => room.getMyMembership() === 'invite')
     return invites
       .filter(room => room
         .getLiveTimeline()
         .getState(Matrix.EventTimeline.FORWARDS)
-        .getStateEvents("m.room.create", "")
-        ?.getContent()?.type === "m.space")
+        .getStateEvents('m.room.create', '')
+        ?.getContent()?.type === 'm.space')
       .map(room => <InviteEntry handleRoom={this.handleRoom} key={room.roomId} room={room} />)
   }
 
-  render(_props, state) {
+  render (_props, state) {
     return <div id="notifications-listing">
       {state.invites}
       {dateReducer(state.events, this.toMilestone, this.toNotification)}
@@ -109,7 +109,7 @@ export default class NotificationListing extends Component {
   }
 }
 
-function Anchor(props) {
+function Anchor (props) {
   return props.fullyLoaded
     ? <div>
       <div id="scroll-done">All notifications loaded</div>
@@ -117,7 +117,7 @@ function Anchor(props) {
     : <div id="scroll-anchor">loading...</div>
 }
 
-function TextNotification(props) {
+function TextNotification (props) {
   return <Notification event={props.event}>
     <TextMessage
       reactions={{}}
@@ -127,7 +127,7 @@ function TextNotification(props) {
 }
 
 class Notification extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       unread: isUnread(props.event)
@@ -136,17 +136,17 @@ class Notification extends Component {
   }
 
   componentDidMount () {
-    Client.client.on("Room.accountData", this.checkUnread)
+    Client.client.on('Room.accountData', this.checkUnread)
     // State events might cause excessive rerendering, but we can optimize for that later
   }
 
   componentWillUnmount () {
-    Client.client.off("Room.accountData", this.checkUnread)
+    Client.client.off('Room.accountData', this.checkUnread)
   }
 
   checkUnread (_event, room) {
     if (room?.roomId === this.props.event.getRoomId()) {
-      this.setState({unread: isUnread(this.props.event)})
+      this.setState({ unread: isUnread(this.props.event) })
     }
   }
 
@@ -156,7 +156,7 @@ class Notification extends Component {
 
   avatarUrl = Client.client.getUser(this.props.event.getSender()).avatarUrl
 
-  avatarHttpURI = Client.client.getHttpUriForMxcFromHS(this.avatarUrl, 20, 20, "crop")
+  avatarHttpURI = Client.client.getHttpUriForMxcFromHS(this.avatarUrl, 20, 20, 'crop')
 
   originRoom = Client.client.getRoom(this.props.event.getRoomId())
 
@@ -178,9 +178,9 @@ class Notification extends Component {
 
   getTopic = _ => {
     switch (this.originLocation.getType()) {
-      case "highlight" : return this.originLocation.getText()
-      case "text" : return <span class="non-text-topic">{Icons.pin}<span> a section of page {this.originLocation.getPageIndex()}</span></span>
-      case "media-fragment" : return <span class="non-text-topic">{Icons.headphones}<span>an interval from {this.originLocation.getIntervalStart()} to {this.originLocation.getIntervalEnd()}</span></span>
+      case 'highlight' : return this.originLocation.getText()
+      case 'text' : return <span class="non-text-topic">{Icons.pin}<span> a section of page {this.originLocation.getPageIndex()}</span></span>
+      case 'media-fragment' : return <span class="non-text-topic">{Icons.headphones}<span>an interval from {this.originLocation.getIntervalStart()} to {this.originLocation.getIntervalEnd()}</span></span>
     }
   }
 
@@ -190,19 +190,19 @@ class Notification extends Component {
     const eventId = this.props.event.getId()
     console.log(origin.event.getId())
     switch (this.originLocation.getType()) {
-      case "highlight" : History.push(`/${alias}/${origin.getPageIndex()}/${origin.getChild()}/${eventId}`); break
-      case "text" : History.push(`/${alias}/${origin.getPageIndex()}/${origin.getChild()}/${eventId}`); break
-      case "media-fragment" : History.push(`/${alias}/${this.originLocation.getIntervalStart()}/${origin.getChild()}/${eventId}`); break
+      case 'highlight' : History.push(`/${alias}/${origin.getPageIndex()}/${origin.getChild()}/${eventId}`); break
+      case 'text' : History.push(`/${alias}/${origin.getPageIndex()}/${origin.getChild()}/${eventId}`); break
+      case 'media-fragment' : History.push(`/${alias}/${this.originLocation.getIntervalStart()}/${origin.getChild()}/${eventId}`); break
       default : console.log(`unrecognized location type: ${JSON.stringify(this.originLocation)}`)
     }
   }
 
-  render(props, state) {
+  render (props, state) {
     // can sometimes take a second for these to sync with newly joined rooms. We don't render in that case
     if (Client.client.getRoom(this.originResource) && this.originLocation) {
       return <div
         onclick={this.originAlias ? this.handleClick : null }
-        class={state.unread ? "notification unread-notification" : "notification"}
+        class={state.unread ? 'notification unread-notification' : 'notification'}
         style={this.userColor.styleVariables}>
         { Client.client.getRoom(this.originResource)?.name
           ? <div class="discussion-intro">In <b>{Client.client.getRoom(this.originResource).name}</b>, discussing</div>
@@ -236,7 +236,7 @@ class InviteEntry extends Component {
     setTimeout(this.props.handleRoom, 1000)
   }
 
-  render(props) {
+  render (props) {
     // TODO We can also get the room avatar, we should use that.
     return <div class="invite-entry">
       <div class="invite-heading">

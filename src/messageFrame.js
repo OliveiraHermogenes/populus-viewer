@@ -1,4 +1,4 @@
-import { h, createRef, Fragment, Component } from 'preact';
+import { h, createRef, Fragment, Component } from 'preact'
 import { UserColor } from './utils/colors.js'
 import * as Icons from './icons.js'
 import * as PopupMenu from './popUpMenu.js'
@@ -11,21 +11,21 @@ import * as CommonMark from 'commonmark'
 import './styles/messageFrame.css'
 
 export default class MessageFrame extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
-    this.state = ({ 
+    this.state = ({
       responding: false,
       status: props.event.getAssociatedStatus()
     })
   }
 
-  componentDidMount() {
-    if (this.props.event.getAssociatedStatus()) this.props.event.on("Event.status", this.handleStatus)
+  componentDidMount () {
+    if (this.props.event.getAssociatedStatus()) this.props.event.on('Event.status', this.handleStatus)
   }
 
-  componentWillUnmount() { this.props.event.off("Event.status", this.handleStatus) }
+  componentWillUnmount () { this.props.event.off('Event.status', this.handleStatus) }
 
-  handleStatus = (_, status) => { this.setState({status}) }
+  handleStatus = (_, status) => { this.setState({ status }) }
 
   userColor = new UserColor(this.props.event.getSender())
 
@@ -40,22 +40,22 @@ export default class MessageFrame extends Component {
     Client.client.redactEvent(this.props.event.getRoomId(), this.props.event.getId())
   }
 
-  render(props, state) {
+  render (props, state) {
     // there's some cleverness involving involving the unstable clientside
     // relation aggregation mechanism that we're not taking advantage of
     // here. Element doesn't seem to use this for replacements yet either.
     const reactions = props.reactions[props.event.getId()]
       ? props.reactions[props.event.getId()]
-        .filter(event => event.getContent()["m.relates_to"].rel_type === "m.annotation")
+        .filter(event => event.getContent()['m.relates_to'].rel_type === 'm.annotation')
       : []
     const isUser = Client.client.getUserId() === props.event.getSender()
     return <Fragment>
       <div data-event-status={isUser ? state.status : null}
         id={props.event.getId()}
         style={props.styleOverride || this.userColor.styleVariables}
-        class={isUser ? "message-frame message-from-user" : "message-frame"}>
+        class={isUser ? 'message-frame message-from-user' : 'message-frame'}>
           {props.children}
-          { state.status === "not_sent"
+          { state.status === 'not_sent'
             ? <div class="message-frame-status">
               message not sent - <a onclick={this.resend}>resend?</a>
             </div>
@@ -77,7 +77,7 @@ export default class MessageFrame extends Component {
                     openEditor={this.openEditor}
                     event={props.event}
                     redactMessage={this.props.canRedact ? this.redactMessage : null}
-                    reactions={reactions} 
+                    reactions={reactions}
                   />
             }
           </MessageDecoration>
@@ -93,14 +93,14 @@ export default class MessageFrame extends Component {
 }
 
 class MessageDecoration extends Component {
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate (nextProps) {
     return (this.props.reactions.length !== nextProps.reactions.length)
   }
 
-  render(props) {
+  render (props) {
     const rtable = {}
     for (const reaction of props.reactions) {
-      const emoji = reaction.getContent()?.["m.relates_to"]?.key
+      const emoji = reaction.getContent()?.['m.relates_to']?.key
       if (!emoji) continue
       rtable[emoji]
         ? rtable[emoji] = rtable[emoji] + 1
@@ -127,13 +127,13 @@ class MessageDecoration extends Component {
 class Badge extends Component {
   checkEmoji = _ => this.props.reactions.find(react =>
     react.getSender() === Client.client.getUserId() &&
-    react.getContent()?.["m.relates_to"]?.key === this.props.rkey
+    react.getContent()?.['m.relates_to']?.key === this.props.rkey
   )
 
   increment = _ => {
-    Client.client.sendEvent(this.props.event.getRoomId(), "m.reaction", {
-      "m.relates_to": {
-        rel_type: "m.annotation",
+    Client.client.sendEvent(this.props.event.getRoomId(), 'm.reaction', {
+      'm.relates_to': {
+        rel_type: 'm.annotation',
         event_id: this.props.event.getId(),
         key: this.props.rkey
       }
@@ -150,23 +150,23 @@ class Badge extends Component {
     else this.increment()
   }
 
-  render(props) {
+  render (props) {
     return <div onClick={this.onClick} class="emoji-badge"><span>{props.rtable[props.rkey]}</span><span>{props.rkey}</span></div>
   }
 }
 
 class ActionsOnOthersMessages extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = { selecting: null }
   }
 
   checkEmoji = emoji => this.props.reactions.some(react => {
     return react.getSender() === Client.client.getUserId() &&
-      react.getContent()?.["m.relates_to"]?.key === emoji
+      react.getContent()?.['m.relates_to']?.key === emoji
   })
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate (_, prevState) {
     if (!prevState.selecting && this.state.selecting) {
       window.addEventListener('click', this.clearCarefully)
     }
@@ -191,9 +191,9 @@ class ActionsOnOthersMessages extends Component {
     this.clearSelecting()
     if (this.checkEmoji(emoji)) return
     // we bail out if there's already a reaction from me.
-    Client.client.sendEvent(this.props.event.getRoomId(), "m.reaction", {
-      "m.relates_to": {
-        rel_type: "m.annotation",
+    Client.client.sendEvent(this.props.event.getRoomId(), 'm.reaction', {
+      'm.relates_to': {
+        rel_type: 'm.annotation',
         event_id: this.props.event.getId(),
         key: emoji
       }
@@ -202,27 +202,27 @@ class ActionsOnOthersMessages extends Component {
 
   handleEmojiClick = click => this.react(click.detail.unicode)()
 
-  selectEmoji = _ => this.setState({ selecting: "emoji" })
+  selectEmoji = _ => this.setState({ selecting: 'emoji' })
 
-  pickEmoji = _ => this.setState({ selecting: "emoji-picker" }, 
-    _ => this.picker.current.shadowRoot.querySelector("input").focus())
+  pickEmoji = _ => this.setState({ selecting: 'emoji-picker' },
+    _ => this.picker.current.shadowRoot.querySelector('input').focus())
 
-  handleEmojiKeydown = e => e.stopPropagation() 
+  handleEmojiKeydown = e => e.stopPropagation()
 
   clearSelecting = _ => this.setState({ selecting: null })
 
-  render(props, state) {
+  render (props, state) {
     switch (state.selecting) {
-      case "emoji-picker" : return <div ref={this.actions} onKeydown={this.handleEmojiKeydown} data-active class="message-actions">
+      case 'emoji-picker' : return <div ref={this.actions} onKeydown={this.handleEmojiKeydown} data-active class="message-actions">
           <emoji-picker ref={this.picker} onemoji-click={this.handleEmojiClick} />
-          <button key="a" style={{position: "relative", left: "250px"}} onclick={this.clearSelecting}>{Icons.close}</button>
+          <button key="a" style={{ position: 'relative', left: '250px' }} onclick={this.clearSelecting}>{Icons.close}</button>
         </div>
-      case "emoji" : return <div ref={this.actions} data-active class="message-actions">
-          <button key="b" onclick={this.react("👍")}>👍</button>
-          <button key="c" onclick={this.react("❤")}>❤</button>
-          <button key="f" onclick={this.react("😲")}>😲</button>
-          <button key="d" onclick={this.react("🤣")}>🤣</button>
-          <button key="e" onclick={this.react("🤔")}>🤔</button>
+      case 'emoji' : return <div ref={this.actions} data-active class="message-actions">
+          <button key="b" onclick={this.react('👍')}>👍</button>
+          <button key="c" onclick={this.react('❤')}>❤</button>
+          <button key="f" onclick={this.react('😲')}>😲</button>
+          <button key="d" onclick={this.react('🤣')}>🤣</button>
+          <button key="e" onclick={this.react('🤔')}>🤔</button>
           <button key="g" onclick={this.pickEmoji}>{Icons.moreHorizontal}</button>
         </div>
       default : return <div ref={this.actions} class="message-actions">
@@ -236,7 +236,7 @@ class ActionsOnOthersMessages extends Component {
             {Icons.like}
             </button>
           </ToolTip>
-          {props.redactMessage 
+          {props.redactMessage
             ? <ToolTip placement="top-end" theme="small" content="Delete this message">
                 <button onclick={props.redactMessage} class="redact">
                 {Icons.trash}
@@ -249,7 +249,7 @@ class ActionsOnOthersMessages extends Component {
   }
 }
 
-function ActionsOnOwnMessages(props) {
+function ActionsOnOwnMessages (props) {
   return <div class="message-actions">
     {!props.responding && props.canEdit &&
       <ToolTip placement="top-end" theme="small" content="Edit this message">
@@ -267,20 +267,20 @@ function ActionsOnOwnMessages(props) {
 }
 
 class MessageEditor extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.currentContent = props.event.getContent()
     this.state = {
-      value: Replies.isReply(this.currentContent) 
+      value: Replies.isReply(this.currentContent)
         ? Replies.stripFallbackPlainString(this.currentContent.body)
         : this.currentContent.body
     }
   }
 
-  componentDidMount() {
-    //We need to toggle these to get everything computed so that the second resize works
-    this.input.current.style.height = 'auto';
-    this.input.current.style.height = `${this.input.current.scrollHeight}px`;
+  componentDidMount () {
+    // We need to toggle these to get everything computed so that the second resize works
+    this.input.current.style.height = 'auto'
+    this.input.current.style.height = `${this.input.current.scrollHeight}px`
     this.resize()
   }
 
@@ -288,7 +288,7 @@ class MessageEditor extends Component {
 
   handleKeydown = e => {
     e.stopPropagation() // don't propagate to global keypress handlers
-    if (e.key === "Enter" && e.ctrlKey) {
+    if (e.key === 'Enter' && e.ctrlKey) {
       e.preventDefault()
       this.sendResponse()
     }
@@ -299,8 +299,8 @@ class MessageEditor extends Component {
   setValue = (value, cb) => this.setState({ value }, cb)
 
   resize = () => {
-    this.input.current.style.height = 'auto';
-    this.input.current.style.height = `${this.input.current.scrollHeight}px`;
+    this.input.current.style.height = 'auto'
+    this.input.current.style.height = `${this.input.current.scrollHeight}px`
   }
 
   sendResponse = () => {
@@ -310,35 +310,35 @@ class MessageEditor extends Component {
     const rendered = writer.render(parsed)
     const theReplacementContent = {
       body: this.state.value,
-      msgtype: "m.text",
-      format: "org.matrix.custom.html",
+      msgtype: 'm.text',
+      format: 'org.matrix.custom.html',
       // TODO sanitize formattedBody before use
       formatted_body: rendered
     }
     if (Replies.isReply(this.currentContent)) {
-      theReplacementContent["m.relates_to"] = this.currentContent["m.relates_to"]
+      theReplacementContent['m.relates_to'] = this.currentContent['m.relates_to']
       theReplacementContent.body = Replies.getReplyPrefixPlain(this.currentContent) + theReplacementContent.body
       theReplacementContent.formatted_body = Replies.getReplyPrefixHtml(this.currentContent) + theReplacementContent.formatted_body
     }
     const theEditEventContent = {
       // fallback for clients that don't handle edits.
-      body: "* ".concat(this.currentContent.body),
-      msgtype: "m.text",
-      "m.new_content": theReplacementContent,
-      "m.relates_to": {
-        rel_type: "m.replace",
+      body: '* '.concat(this.currentContent.body),
+      msgtype: 'm.text',
+      'm.new_content': theReplacementContent,
+      'm.relates_to': {
+        rel_type: 'm.replace',
         event_id: this.props.event.getId()
       }
     }
-    Client.client.sendEvent(this.props.event.getRoomId(), "m.room.message", theEditEventContent).then(_ => this.props.closeEditor())
+    Client.client.sendEvent(this.props.event.getRoomId(), 'm.room.message', theEditEventContent).then(_ => this.props.closeEditor())
   }
 
   popupActions = {
-    "@": props => <PopupMenu.Members roomId={this.props.event.getRoomId()} {...props} />,
-    ":": props => <PopupMenu.Emojis {...props} />
+    '@': props => <PopupMenu.Members roomId={this.props.event.getRoomId()} {...props} />,
+    ':': props => <PopupMenu.Emojis {...props} />
   }
 
-  render(_props, state) {
+  render (_props, state) {
     return <div class="messageEditor">
       <PopupMenu.Menu
         textValue={state.value}
@@ -363,7 +363,7 @@ class ReplyComposer extends Component {
 
   handleKeydown = e => {
     e.stopPropagation() // don't propagate to global keypress handlers
-    if (e.key === "Enter" && e.ctrlKey) {
+    if (e.key === 'Enter' && e.ctrlKey) {
       e.preventDefault()
       this.sendResponse()
     }
@@ -371,8 +371,8 @@ class ReplyComposer extends Component {
 
   handleInput = (event) => {
     this.setValue(event.target.value)
-    this.input.current.style.height = 'auto';
-    this.input.current.style.height = `${this.input.current.scrollHeight}px`;
+    this.input.current.style.height = 'auto'
+    this.input.current.style.height = `${this.input.current.scrollHeight}px`
   }
 
   setValue = (value, cb) => this.setState({ value }, cb)
@@ -385,10 +385,10 @@ class ReplyComposer extends Component {
     Client.client.sendMessage(this.props.event.getRoomId(), {
       body: Replies.generateFallbackPlain(this.props.event) + this.state.value,
       formatted_body: Replies.generateFallbackHtml(this.props.event) + rendered,
-      format: "org.matrix.custom.html",
-      msgtype: "m.text",
-      "m.relates_to": {
-        "m.in_reply_to": {
+      format: 'org.matrix.custom.html',
+      msgtype: 'm.text',
+      'm.relates_to': {
+        'm.in_reply_to': {
           event_id: this.props.event.getId()
         }
       }
@@ -396,11 +396,11 @@ class ReplyComposer extends Component {
   }
 
   popupActions = {
-    "@": props => <PopupMenu.Members roomId={this.props.event.getRoomId()} {...props} />,
-    ":": props => <PopupMenu.Emojis {...props} />
+    '@': props => <PopupMenu.Members roomId={this.props.event.getRoomId()} {...props} />,
+    ':': props => <PopupMenu.Emojis {...props} />
   }
 
-  render(_props, state) {
+  render (_props, state) {
     return <div class="replyComposer">
       <PopupMenu.Menu
         textValue={state.value}

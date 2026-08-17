@@ -1,12 +1,12 @@
 import Client from '../client.js'
 
-export function calculateUnread(roomId) {
+export function calculateUnread (roomId) {
   const room = Client.client.getRoom(roomId)
   if (room) return room.getUnreadNotificationCount()
-  return "All"
+  return 'All'
 }
 
-export function isUnread(event) {
+export function isUnread (event) {
   const roomIfJoined = Client.client.getRoom(event.getRoomId())
   if (roomIfJoined) {
     const events = roomIfJoined.getLiveTimeline().getEvents()

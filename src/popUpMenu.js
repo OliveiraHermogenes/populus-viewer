@@ -1,4 +1,4 @@
-import { h, Component } from 'preact';
+import { h, Component } from 'preact'
 import Client from './client.js'
 import { UserColor } from './utils/colors.js'
 import { Database } from 'emoji-picker-element'
@@ -7,21 +7,21 @@ import './styles/popUpMenu.css'
 export class Menu extends Component {
   componentDidMount () {
     if (this.props.textarea?.current) {
-      this.props.textarea.current.addEventListener("input", this.handleInput)
-      this.props.textarea.current.addEventListener("click", this.cancel)
-      this.props.textarea.current.addEventListener("blur", this.cancel)
+      this.props.textarea.current.addEventListener('input', this.handleInput)
+      this.props.textarea.current.addEventListener('click', this.cancel)
+      this.props.textarea.current.addEventListener('blur', this.cancel)
     }
   }
 
   componentWillUnmount () {
     if (this.props.textarea?.current) {
-      this.props.textarea.current.removeEventListener("input", this.handleInput)
-      this.props.textarea.current.removeEventListener("click", this.cancel)
-      this.props.textarea.current.removeEventListener("blur", this.cancel)
+      this.props.textarea.current.removeEventListener('input', this.handleInput)
+      this.props.textarea.current.removeEventListener('click', this.cancel)
+      this.props.textarea.current.removeEventListener('blur', this.cancel)
     }
   }
 
-  cancel = _ => this.setState({active: null})
+  cancel = _ => this.setState({ active: null })
 
   handleInput = e => this.props.actions[e.data]
     ? this.setState({ active: this.props.actions[e.data] })
@@ -47,7 +47,7 @@ export class Menu extends Component {
     this.cancel()
   }
 
-  render(props, state) {
+  render (props, state) {
     if (state.active) {
       return state.active({
         insert: this.insert,
@@ -61,7 +61,7 @@ export class Menu extends Component {
 }
 
 export class Emojis extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       popupItems: [],
@@ -73,32 +73,32 @@ export class Emojis extends Component {
 
   componentDidMount () {
     if (this.props.textarea) {
-      this.props.textarea.current.addEventListener("keydown", this.handleKeydown)
-      this.props.textarea.current.addEventListener("keyup", this.handleKeyup)
+      this.props.textarea.current.addEventListener('keydown', this.handleKeydown)
+      this.props.textarea.current.addEventListener('keyup', this.handleKeyup)
     }
   }
 
   componentWillUnmount () {
     if (this.props.textarea) {
-      this.props.textarea.current.removeEventListener("keydown", this.handleKeydown)
-      this.props.textarea.current.removeEventListener("keyup", this.handleKeyup)
+      this.props.textarea.current.removeEventListener('keydown', this.handleKeydown)
+      this.props.textarea.current.removeEventListener('keyup', this.handleKeyup)
     }
   }
 
   handleKeydown = e => {
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault()
       if (this.state.selection + 1 < this.state.popupItems.length) {
-        this.setState(oldState => { return {selection: oldState.selection + 1} })
+        this.setState(oldState => { return { selection: oldState.selection + 1 } })
       }
     }
-    if (e.key === "ArrowUp") {
+    if (e.key === 'ArrowUp') {
       e.preventDefault()
       if (this.state.selection > 0) {
-        this.setState(oldState => { return {selection: oldState.selection - 1} })
+        this.setState(oldState => { return { selection: oldState.selection - 1 } })
       }
     }
-    if ((e.key === "Enter" || e.key === ":") &&
+    if ((e.key === 'Enter' || e.key === ':') &&
       this.state.popupItems.length > 0) {
       e.preventDefault()
       this.insertSelection()
@@ -143,11 +143,11 @@ export class Emojis extends Component {
     this.props.insert(emoji, /:\S*$/)
   }
 
-  render(props, state) {
+  render (props, state) {
     if (this.state.popupItems.length > 0) {
       // We use a relatively positioned wrapper to keep the PUM in the document flow
-      return <div style={{top: `${state.popupItems.length * 40}px`}} id="popup-wrapper">
-        <div id="popup-menu" style={props.below ? {top: "0px"} : {bottom: "0px"}}>
+      return <div style={{ top: `${state.popupItems.length * 40}px` }} id="popup-wrapper">
+        <div id="popup-menu" style={props.below ? { top: '0px' } : { bottom: '0px' }}>
           {this.state.popupItems}
         </div>
       </div>
@@ -161,10 +161,10 @@ class Emoji extends Component {
     this.props.insert(this.props.emoji.unicode, /:\S*$/)
   }
 
-  render(props) {
+  render (props) {
     return <div
       onmousedown={this.insertEmoji}
-      class={props.selected ? "popup-menu-item-selected-emoji popup-menu-item" : "popup-menu-item"}>
+      class={props.selected ? 'popup-menu-item-selected-emoji popup-menu-item' : 'popup-menu-item'}>
       <span class="popup-menu-item-emojishortcode"> :{props.emoji.shortcodes[0]}: </span>
       <span>•</span>
       <span class="popup-menu-item-emojiglyph"> {props.emoji.unicode} </span>
@@ -173,7 +173,7 @@ class Emoji extends Component {
 }
 
 export class Users extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       popupItems: [],
@@ -183,41 +183,41 @@ export class Users extends Component {
 
   componentDidMount () {
     if (this.props.textarea) {
-      this.props.textarea.current.addEventListener("keydown", this.handleKeydown)
-      this.props.textarea.current.addEventListener("keyup", this.handleKeyup)
+      this.props.textarea.current.addEventListener('keydown', this.handleKeydown)
+      this.props.textarea.current.addEventListener('keyup', this.handleKeyup)
     }
   }
 
   componentWillUnmount () {
     if (this.props.textarea) {
-      this.props.textarea.current.removeEventListener("keydown", this.handleKeydown)
-      this.props.textarea.current.removeEventListener("keyup", this.handleKeyup)
+      this.props.textarea.current.removeEventListener('keydown', this.handleKeydown)
+      this.props.textarea.current.removeEventListener('keyup', this.handleKeyup)
     }
   }
 
   handleKeydown = e => {
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault()
       if (this.state.selection + 1 < this.state.popupItems.length) {
-        this.setState(oldState => { return {selection: oldState.selection + 1} })
+        this.setState(oldState => { return { selection: oldState.selection + 1 } })
       }
     }
-    if (e.key === "ArrowUp") {
+    if (e.key === 'ArrowUp') {
       e.preventDefault()
       if (this.state.selection > 0) {
-        this.setState(oldState => { return {selection: oldState.selection - 1} })
+        this.setState(oldState => { return { selection: oldState.selection - 1 } })
       }
     }
-    if (e.key === "Enter" && this.state.popupItems.length > 0) {
+    if (e.key === 'Enter' && this.state.popupItems.length > 0) {
       e.preventDefault()
       this.insertSelection()
     }
   }
 
-  generatePopupItems(value) {
+  generatePopupItems (value) {
     return Client.client.getUsers()
-      .filter(user => 
-        user.userId.includes(value.toLowerCase()) || 
+      .filter(user =>
+        user.userId.includes(value.toLowerCase()) ||
         user.displayName.toLowerCase().includes(value.toLowerCase())
       )
       .slice(0, 3) // top 3
@@ -241,7 +241,7 @@ export class Users extends Component {
       const matches = this.props.textValue.slice(0, selend).match(/@\S*$/)
       if (matches) {
         const popupItems = this.generatePopupItems(matches[0].substring(1))
-        const newState = {popupItems}
+        const newState = { popupItems }
         if (popupItems.length < this.state.selection + 1) {
           newState.selection = Math.max(popupItems.length - 1, 0)
         }
@@ -252,11 +252,11 @@ export class Users extends Component {
     this.props.cancel()
   }
 
-  render(props, state) {
+  render (props, state) {
     if (this.state.popupItems.length > 0) {
       // We use a relatively positioned wrapper to keep the PUM in the document flow
-      return <div style={{top: `${state.popupItems.length * 40}px`}} id="popup-wrapper">
-        <div id="popup-menu" style={props.below ? {top: "0px"} : {bottom: "0px"}}>
+      return <div style={{ top: `${state.popupItems.length * 40}px` }} id="popup-wrapper">
+        <div id="popup-menu" style={props.below ? { top: '0px' } : { bottom: '0px' }}>
           {this.state.popupItems}
         </div>
       </div>
@@ -272,12 +272,12 @@ class User extends Component {
     this.props.insert(`${this.props.user.userId} `, /@\S*$/)
   }
 
-  render(props) {
+  render (props) {
     return <div
       onmousedown={this.insertUserId}
       style={this.colorFromId.styleVariables}
-      class={props.selected ? "popup-menu-item-selected-user popup-menu-item" : "popup-menu-item"}>
-      <span class="popup-menu-item-userid"> @{props.user.userId.split(":")[0].substring(1)} </span>
+      class={props.selected ? 'popup-menu-item-selected-user popup-menu-item' : 'popup-menu-item'}>
+      <span class="popup-menu-item-userid"> @{props.user.userId.split(':')[0].substring(1)} </span>
       <span>•</span>
       <span class="popup-menu-item-username"> {props.user.displayName} </span>
     </div>
@@ -285,7 +285,7 @@ class User extends Component {
 }
 
 export class Members extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       popupItems: [],
@@ -295,43 +295,43 @@ export class Members extends Component {
 
   componentDidMount () {
     if (this.props.textarea) {
-      this.props.textarea.current.addEventListener("keydown", this.handleKeydown)
-      this.props.textarea.current.addEventListener("keyup", this.handleKeyup)
+      this.props.textarea.current.addEventListener('keydown', this.handleKeydown)
+      this.props.textarea.current.addEventListener('keyup', this.handleKeyup)
     }
   }
 
   componentWillUnmount () {
     if (this.props.textarea) {
-      this.props.textarea.current.removeEventListener("keydown", this.handleKeydown)
-      this.props.textarea.current.removeEventListener("keyup", this.handleKeyup)
+      this.props.textarea.current.removeEventListener('keydown', this.handleKeydown)
+      this.props.textarea.current.removeEventListener('keyup', this.handleKeyup)
     }
   }
 
   handleKeydown = e => {
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault()
       if (this.state.selection + 1 < this.state.popupItems.length) {
-        this.setState(oldState => { return {selection: oldState.selection + 1} })
+        this.setState(oldState => { return { selection: oldState.selection + 1 } })
       }
     }
-    if (e.key === "ArrowUp") {
+    if (e.key === 'ArrowUp') {
       e.preventDefault()
       if (this.state.selection > 0) {
-        this.setState(oldState => { return {selection: oldState.selection - 1} })
+        this.setState(oldState => { return { selection: oldState.selection - 1 } })
       }
     }
-    if (e.key === "Enter" && this.state.popupItems.length > 0) {
+    if (e.key === 'Enter' && this.state.popupItems.length > 0) {
       e.preventDefault()
       this.insertSelection()
     }
   }
 
-  generatePopupItems(value) {
+  generatePopupItems (value) {
     const room = Client.client.getRoom(this.props.roomId)
     if (room) {
-      return room.getMembersWithMembership("join")
-        .filter(member => 
-          member.userId.includes(value.toLowerCase()) || 
+      return room.getMembersWithMembership('join')
+        .filter(member =>
+          member.userId.includes(value.toLowerCase()) ||
           member.name.toLowerCase().includes(value.toLowerCase()))
         .slice(0, 3) // top 3
         .map((member, idx) => <Member
@@ -356,7 +356,7 @@ export class Members extends Component {
       const matches = this.props.textValue.slice(0, selend).match(/@\S*$/)
       if (matches) {
         const popupItems = this.generatePopupItems(matches[0].substring(1))
-        const newState = {popupItems}
+        const newState = { popupItems }
         if (popupItems.length < this.state.selection + 1) {
           newState.selection = Math.max(popupItems.length - 1, 0)
         }
@@ -367,11 +367,11 @@ export class Members extends Component {
     this.props.cancel()
   }
 
-  render(props, state) {
+  render (props, state) {
     if (this.state.popupItems.length > 0) {
       // We use a relatively positioned wrapper to keep the PUM in the document flow
-      return <div style={{top: `${state.popupItems.length * 40}px`}} id="popup-wrapper">
-        <div id="popup-menu" style={props.below ? {top: "0px"} : {bottom: "0px"}}>
+      return <div style={{ top: `${state.popupItems.length * 40}px` }} id="popup-wrapper">
+        <div id="popup-menu" style={props.below ? { top: '0px' } : { bottom: '0px' }}>
           {this.state.popupItems}
         </div>
       </div>
@@ -387,12 +387,12 @@ class Member extends Component {
     this.props.insert(`${this.props.member.userId} `, /@\S*$/)
   }
 
-  render(props) {
+  render (props) {
     return <div
       onmousedown={this.insertUserId}
       style={this.colorFromId.styleVariables}
-      class={props.selected ? "popup-menu-item-selected-user popup-menu-item" : "popup-menu-item"}>
-      <span class="popup-menu-item-userid"> @{props.member.userId.split(":")[0].substring(1)} </span>
+      class={props.selected ? 'popup-menu-item-selected-user popup-menu-item' : 'popup-menu-item'}>
+      <span class="popup-menu-item-userid"> @{props.member.userId.split(':')[0].substring(1)} </span>
       <span>•</span>
       <span class="popup-menu-item-username"> {props.member.name} </span>
     </div>
@@ -400,7 +400,7 @@ class Member extends Component {
 }
 
 export class Flags extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       popupItems: [],
@@ -410,38 +410,38 @@ export class Flags extends Component {
 
   componentDidMount () {
     if (this.props.textarea) {
-      this.props.textarea.current.addEventListener("keydown", this.handleKeydown)
-      this.props.textarea.current.addEventListener("keyup", this.handleKeyup)
+      this.props.textarea.current.addEventListener('keydown', this.handleKeydown)
+      this.props.textarea.current.addEventListener('keyup', this.handleKeyup)
     }
   }
 
   componentWillUnmount () {
     if (this.props.textarea) {
-      this.props.textarea.current.removeEventListener("keydown", this.handleKeydown)
-      this.props.textarea.current.removeEventListener("keyup", this.handleKeyup)
+      this.props.textarea.current.removeEventListener('keydown', this.handleKeydown)
+      this.props.textarea.current.removeEventListener('keyup', this.handleKeyup)
     }
   }
 
   handleKeydown = e => {
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault()
       if (this.state.selection + 1 < this.state.popupItems.length) {
-        this.setState(oldState => { return {selection: oldState.selection + 1} })
+        this.setState(oldState => { return { selection: oldState.selection + 1 } })
       }
     }
-    if (e.key === "ArrowUp") {
+    if (e.key === 'ArrowUp') {
       e.preventDefault()
       if (this.state.selection > 0) {
-        this.setState(oldState => { return {selection: oldState.selection - 1} })
+        this.setState(oldState => { return { selection: oldState.selection - 1 } })
       }
     }
-    if (e.key === "Enter" && this.state.popupItems.length > 0) {
+    if (e.key === 'Enter' && this.state.popupItems.length > 0) {
       e.preventDefault()
       this.insertSelection()
     }
   }
 
-  generatePopupItems(value) {
+  generatePopupItems (value) {
     return this.props.flags
       .filter(flag => flag.keyword.includes(value))
       .slice(0, 3) // top 3
@@ -465,7 +465,7 @@ export class Flags extends Component {
       const matches = this.props.textValue.slice(0, selend).match(/~\S*$/)
       if (matches) {
         const popupItems = this.generatePopupItems(matches[0].substring(1))
-        const newState = {popupItems}
+        const newState = { popupItems }
         if (popupItems.length < this.state.selection + 1) {
           newState.selection = Math.max(popupItems.length - 1, 0)
         }
@@ -476,11 +476,11 @@ export class Flags extends Component {
     this.props.cancel()
   }
 
-  render(props, state) {
+  render (props, state) {
     if (this.state.popupItems.length > 0) {
       // We use a relatively positioned wrapper to keep the PUM in the document flow
-      return <div style={{top: `${state.popupItems.length * 40}px`}} id="popup-wrapper">
-        <div id="popup-menu" style={props.below ? {top: "0px"} : {bottom: "0px"}}>
+      return <div style={{ top: `${state.popupItems.length * 40}px` }} id="popup-wrapper">
+        <div id="popup-menu" style={props.below ? { top: '0px' } : { bottom: '0px' }}>
           {this.state.popupItems}
         </div>
       </div>
@@ -494,10 +494,10 @@ class Flag extends Component {
     this.props.insert(`~${this.props.flag.keyword} `, /~\S*$/)
   }
 
-  render(props) {
+  render (props) {
     return <div
       onmousedown={this.insertFlag}
-      class={props.selected ? "popup-menu-item-selected-flag popup-menu-item" : "popup-menu-item"}>
+      class={props.selected ? 'popup-menu-item-selected-flag popup-menu-item' : 'popup-menu-item'}>
       <span class="popup-menu-item-flag"> ~{props.flag.keyword} </span>
       <span>•</span>
       <span class="popup-menu-item-flag-description"> {props.flag.description} </span>

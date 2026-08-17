@@ -1,31 +1,31 @@
-import { h, createRef, Fragment, Component } from 'preact';
+import { h, createRef, Fragment, Component } from 'preact'
 import './styles/pdfView.css'
 import './styles/content-container.css'
-import * as Matrix from "matrix-js-sdk"
-import Chat from "./chat.js"
-import RoomIcon from "./roomIcon.js"
-import AnnotationListing from "./annotationListing.js"
-import SearchResults from "./searchResults.js"
-import PdfContent from "./pdfContent.js"
-import MediaContent from "./mediaContent.js"
-import ImageContent from "./imageContent.js"
+import * as Matrix from 'matrix-js-sdk'
+import Chat from './chat.js'
+import RoomIcon from './roomIcon.js'
+import AnnotationListing from './annotationListing.js'
+import SearchResults from './searchResults.js'
+import PdfContent from './pdfContent.js'
+import MediaContent from './mediaContent.js'
+import ImageContent from './imageContent.js'
 import History from './history.js'
 import Client from './client.js'
-import DocumentNavbar from "./documentNavbar.js"
-import MediaNavbar from "./mediaNavbar.js"
-import ImageNavbar from "./imageNavbar.js"
-import { lastViewed } from "./constants.js"
+import DocumentNavbar from './documentNavbar.js'
+import MediaNavbar from './mediaNavbar.js'
+import ImageNavbar from './imageNavbar.js'
+import { lastViewed } from './constants.js'
 import Location from './utils/location.js'
 import Resource from './utils/resource.js'
 import SyncIndicator from './syncIndicator.js'
-import Toast from "./toast.js"
-import MediaModal from "./mediaModal.js"
-import ToolTip from "./utils/tooltip.js"
-import * as Icons from "./icons.js"
-import { UserColor } from "./utils/colors.js"
+import Toast from './toast.js'
+import MediaModal from './mediaModal.js'
+import ToolTip from './utils/tooltip.js'
+import * as Icons from './icons.js'
+import { UserColor } from './utils/colors.js'
 
 export default class ContentView extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     const maybeState = History.history.location.state
     this.state = {
@@ -40,9 +40,9 @@ export default class ContentView extends Component {
       annotationsVisible: true,
       filteredAnnotationContents: [],
       pindropMode: null,
-      annotationFilter: maybeState ? maybeState.searchString : "",
-      searchString: "",
-      loadingStatus: "loading...",
+      annotationFilter: maybeState ? maybeState.searchString : '',
+      searchString: '',
+      loadingStatus: 'loading...',
       contentWidthPx: null,
       contentHeightPx: null,
       zoomFactor: null,
@@ -53,22 +53,22 @@ export default class ContentView extends Component {
     this.userColor = new UserColor(Client.client.getUserId())
   }
 
-  componentDidMount() {
-    document.addEventListener("selectionchange", this.checkForSelection)
+  componentDidMount () {
+    document.addEventListener('selectionchange', this.checkForSelection)
     document.addEventListener('keydown', this.handleKeydown)
-    Client.client.on("RoomState.events", this.handleStateUpdate)
-    Client.client.on("Room.accountData", this.handleAccountData)
+    Client.client.on('RoomState.events', this.handleStateUpdate)
+    Client.client.on('Room.accountData', this.handleAccountData)
     this.fetchResource()
   }
 
-  componentWillUnmount() {
-    document.removeEventListener("selectionchange", this.checkForSelection)
+  componentWillUnmount () {
+    document.removeEventListener('selectionchange', this.checkForSelection)
     document.removeEventListener('keydown', this.handleKeydown)
-    Client.client.off("RoomState.events", this.handleStateUpdate)
-    Client.client.off("Room.accountData", this.handleAccountData)
+    Client.client.off('RoomState.events', this.handleStateUpdate)
+    Client.client.off('Room.accountData', this.handleAccountData)
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate (prevProps) {
     // on change of resource, fetch new resource
     if (prevProps.resourceAlias !== this.props.resourceAlias) this.fetchResource()
     // on change of focused room, refresh relevant UI
@@ -115,19 +115,18 @@ export default class ContentView extends Component {
     this.contentContainer.current.dataset.touches = e.touches.length
     if (e.touches.length === 2) {
       // if two fingers are down, start a pinch
-      this.initialDistance = Math.sqrt((e.touches[0].clientX - e.touches[1].clientX)**2 + (e.touches[0].clientY - e.touches[1].clientY)**2)
+      this.initialDistance = Math.sqrt((e.touches[0].clientX - e.touches[1].clientX) ** 2 + (e.touches[0].clientY - e.touches[1].clientY) ** 2)
       this.initialZoom = this.state.zoomFactor
     }
   }
 
-  handleTouchEnd = e => this.contentContainer.current.dataset.touches = e.touches.length
-
+  handleTouchEnd = e => { this.contentContainer.current.dataset.touches = e.touches.length }
 
   handleTouchMove = e => {
     if (e.touches.length === 2) {
       // if two fingers are down, handle a pinch update
-      const newDistance = Math.sqrt((e.touches[0].clientX - e.touches[1].clientX)**2 + (e.touches[0].clientY - e.touches[1].clientY)**2)
-      this.setZoom(_ => this.initialZoom * ( newDistance / this.initialDistance))
+      const newDistance = Math.sqrt((e.touches[0].clientX - e.touches[1].clientX) ** 2 + (e.touches[0].clientY - e.touches[1].clientY) ** 2)
+      this.setZoom(_ => this.initialZoom * (newDistance / this.initialDistance))
     }
   }
 
@@ -152,33 +151,34 @@ export default class ContentView extends Component {
   }
 
   fetchResource = async _ => {
-    await new Promise(res => this.setState({ room:null,
-      mimetype:null,
+    await new Promise(resolve => this.setState({
+      room: null,
+      mimetype: null,
       contentWidthPx: null,
       contentHeightPx: null,
       zoomFactor: null,
       resourceLength: null,
-      loadingStatus: "loading...",
-    }, res))
+      loadingStatus: 'loading...',
+    }, resolve))
     const aliasResponse = await Client.client.getRoomIdForAlias(`#${this.props.resourceAlias}`).catch(this.catchFetchResourceError)
     if (this.errorCondition) return
-    const {room_id, servers} = aliasResponse
-    await Client.client.joinRoom(room_id, { viaServers: servers }).catch(this.catchFetchResourceError)
+    const { room_id: roomId, servers } = aliasResponse
+    await Client.client.joinRoom(roomId, { viaServers: servers }).catch(this.catchFetchResourceError)
     if (this.errorCondition) return
-    const room = await Client.client.getRoomWithState(room_id).catch(this.catchFetchResourceError)
+    const room = await Client.client.getRoomWithState(roomId).catch(this.catchFetchResourceError)
     if (this.errorCondition) return
     const resource = new Resource(room)
     const mimetype = resource.mimetype
-    this.setState({room, resource, mimetype}, _ => {
-      this.initializeAnnotations() //careful, these need to be initialized before we can focus by roomId
+    this.setState({ room, resource, mimetype }, _ => {
+      this.initializeAnnotations() // careful, these need to be initialized before we can focus by roomId
       if (this.props.roomFocused) this.focusByRoomId(this.props.roomFocused, this.props.eventFocused)
     })
   }
 
   startPindrop = _ => {
     setTimeout(_ => {
-      this.setState({pindropMode: {}})
-      document.addEventListener("click", this.content.current.releasePin)
+      this.setState({ pindropMode: {} })
+      document.addEventListener('click', this.content.current.releasePin)
     }, 200)
   }
 
@@ -188,7 +188,7 @@ export default class ContentView extends Component {
     const heightratio = height / contentHeightPx
     const widthratio = width / contentWidthPx
     const zoomFactor = this.state.zoomFactor || Math.max(Math.min(heightratio, widthratio, 5), 1)
-    this.setState({contentHeightPx, contentWidthPx, zoomFactor})
+    this.setState({ contentHeightPx, contentWidthPx, zoomFactor })
   }
 
   setSearchText = searchText => { this.searchText = searchText }
@@ -202,28 +202,28 @@ export default class ContentView extends Component {
     })
   }
 
-  setResourceLength = resourceLength => this.setState({resourceLength})
+  setResourceLength = resourceLength => this.setState({ resourceLength })
 
-  setLoadingStatus = loadingStatus => this.setState({loadingStatus})
+  setLoadingStatus = loadingStatus => this.setState({ loadingStatus })
 
-  setSearch = searchString => this.setState({searchString})
+  setSearch = searchString => this.setState({ searchString })
 
   showSearch = _ => {
-    this.setState({ listingType: "search" })
+    this.setState({ listingType: 'search' })
     this.showListing()
   }
 
-  endSearch = _ => this.setState({listingType: null})
+  endSearch = _ => this.setState({ listingType: null })
 
   toggleAnnotations = _ => this.setState(oldState => {
     return { annotationsVisible: !oldState.annotationsVisible }
   })
 
-  setMobileButtonColor = mobileButtonColor => this.setState({mobileButtonColor})
+  setMobileButtonColor = mobileButtonColor => this.setState({ mobileButtonColor })
 
   setZoom = zoomFunction => {
     let zoomFactor = zoomFunction(this.state.zoomFactor)
-    if (zoomFactor < this.content.current.zoomMin) this.setState({zoomFactor: this.content.current.zoomMin})
+    if (zoomFactor < this.content.current.zoomMin) this.setState({ zoomFactor: this.content.current.zoomMin })
     else {
       zoomFactor = Math.min(zoomFactor, this.content.current.zoomMax)
       const unscaledInternalOffsetX = (this.contentContainer.current.clientWidth / 2)
@@ -235,7 +235,7 @@ export default class ContentView extends Component {
       const newX = scaledLeft + scaledInternalOffsetX - unscaledInternalOffsetX
       const newY = scaledTop + scaledInternalOffsetY - unscaledInternalOffsetY
       this.contentContainer.current.scrollTo(newX, newY)
-      this.setState({zoomFactor})
+      this.setState({ zoomFactor })
     }
   }
 
@@ -243,7 +243,7 @@ export default class ContentView extends Component {
     const mergedLocations = Object.assign({}, this.annotationParentEvents, this.annotationChildEvents)
     if (mergedLocations[roomId]) {
       const focus = mergedLocations[roomId]
-      History.push(`/${encodeURIComponent(this.props.resourceAlias)}/${focus.getResourcePosition()}/${roomId}${eventId ? "/" + eventId : ""}`)
+      History.push(`/${encodeURIComponent(this.props.resourceAlias)}/${focus.getResourcePosition()}/${roomId}${eventId ? `/${eventId}` : ''}`)
       const listingVisible = document.body.offsetWidth <= 600 ? false : this.state.listingVisible
       this.setState({ focus, secondaryFocus: null, chatVisible: true, listingVisible })
     }
@@ -268,16 +268,16 @@ export default class ContentView extends Component {
   }
 
   focusPrev = _ => {
-    const clone = [... this.state.filteredAnnotationContents]
+    const clone = [...this.state.filteredAnnotationContents]
     this.focusNextInArray(clone.reverse())
   }
 
-  hideChat = _ => this.setState({chatVisible: false})
+  hideChat = _ => this.setState({ chatVisible: false })
 
   showChat = _ => {
     const narrow = document.body.offsetWidth <= 768
-    if (narrow) this.setState({listingVisible: false, chatVisible: true})
-    else this.setState({chatVisible: true})
+    if (narrow) this.setState({ listingVisible: false, chatVisible: true })
+    else this.setState({ chatVisible: true })
   }
 
   toggleChat = _ => this.setState(oldState => {
@@ -285,14 +285,14 @@ export default class ContentView extends Component {
     else this.showChat()
   })
 
-  setPindropMode = mode => this.setState({pindropMode: mode})
+  setPindropMode = mode => this.setState({ pindropMode: mode })
 
-  hideListing = _ => this.setState({listingVisible: false})
+  hideListing = _ => this.setState({ listingVisible: false })
 
   showListing = _ => {
     const narrow = document.body.offsetWidth <= 768
-    if (narrow) this.setState({listingVisible: true, chatVisible: false})
-    else this.setState({listingVisible: true})
+    if (narrow) this.setState({ listingVisible: true, chatVisible: false })
+    else this.setState({ listingVisible: true })
   }
 
   toggleListing = _ => this.setState(oldState => {
@@ -301,29 +301,29 @@ export default class ContentView extends Component {
   })
 
   openSidebar = _ => this.setState(_ => {
-    if (this.focus) return {chatVisible: true}
-    return {listingVisible: true}
+    if (this.focus) return { chatVisible: true }
+    return { listingVisible: true }
   })
 
-  checkForSelection  = _ => {
+  checkForSelection = _ => {
     const hasSelection = !!(this.content.current?.hasSelection())
-    if (this.state.hasSelection !== hasSelection) this.setState({hasSelection})
+    if (this.state.hasSelection !== hasSelection) this.setState({ hasSelection })
   }
 
   handleKeydown = e => {
     if (e.altKey && e.key === 'a') this.openAnnotation()
     if (e.altKey && e.key === 'r') this.closeAnnotation()
     if (e.altKey && e.key === 'v') this.toggleAnnotations()
-    if (this.state.mimetype === "application/pdf" && e.altKey && e.key === "/") this.showSearch()
+    if (this.state.mimetype === 'application/pdf' && e.altKey && e.key === '/') this.showSearch()
     if (e.ctrlKey || e.altKey || e.metaKey) return // Don't catch browser shortcuts
     if (e.key === '+' || e.key === '=') this.setZoom(zoomFactor => zoomFactor + 0.1)
     if (e.key === '-') this.setZoom(zoomFactor => zoomFactor - 0.1)
-    if (e.key === "Esc" || e.key === "Escape") History.push("/")
+    if (e.key === 'Esc' || e.key === 'Escape') History.push('/')
   }
 
   openAnnotation = _ => {
     this.setState({ annotationsVisible: true })
-    if (this.state.mimetype === "application/pdf") {
+    if (this.state.mimetype === 'application/pdf') {
       if (this.state.pindropMode?.x) this.content.current.commitPin(this.state.pindropMode.x, this.state.pindropMode.y, this.state.pindropMode.page)
       else this.content.current.commitHighlight()
     } else if (this.state.mimetype?.match(/^audio|^video|^image/)) {
@@ -345,7 +345,7 @@ export default class ContentView extends Component {
     Client.client.sendStateEvent(discussionId, Matrix.EventType.SpaceParent, {}, resourceId)
       .catch(e => {
         switch (e) {
-          case "M_FORBIDDEN" : {
+          case 'M_FORBIDDEN' : {
             Toast.set(<Fragment>
               <div>Annotation still visible to creator</div>
               <div style="margin-top:10px">
@@ -367,7 +367,7 @@ export default class ContentView extends Component {
     // XXX breaking this up into two updates makes the animation work properly.
     // If you replace the element AND unset chat visibility in one update, then
     // the annotation panel jumps to the left
-    this.setState({secondaryFocus: null, focus: null}, _ => this.setState({chatVisible: false}))
+    this.setState({ secondaryFocus: null, focus: null }, _ => this.setState({ chatVisible: false }))
     if (opts?.replace) History.replace(`/${encodeURIComponent(this.props.resourceAlias)}/${this.props.resourcePosition}/`)
     else History.push(`/${encodeURIComponent(this.props.resourceAlias)}/${this.props.resourcePosition}`)
   }
@@ -375,27 +375,27 @@ export default class ContentView extends Component {
   setFocus = (focus, opts) => {
     if (opts?.replace) History.replace(`/${encodeURIComponent(this.props.resourceAlias)}/${opts?.holdPosition ? this.props.resourcePosition : focus.getResourcePosition()}/${focus.getChild()}/`)
     else History.push(`/${encodeURIComponent(this.props.resourceAlias)}/${opts?.holdPosition ? this.props.resourcePosition : focus.getResourcePosition()}/${focus.getChild()}`)
-    this.setState({secondaryFocus: null, focus, chatVisible: true })
+    this.setState({ secondaryFocus: null, focus, chatVisible: true })
   }
 
   refreshFocus = _ => {
     if (!this.state.room) return
-    if (!this.props.roomFocused) this.unsetFocus({replace: true})
+    if (!this.props.roomFocused) this.unsetFocus({ replace: true })
     else {
       const mergedLocations = Object.assign({}, this.annotationParentEvents, this.annotationChildEvents)
       const theAnnotation = mergedLocations[this.props.roomFocused]
-      if (theAnnotation) this.setFocus(theAnnotation, {replace: true, holdPosition: true})
+      if (theAnnotation) this.setFocus(theAnnotation, { replace: true, holdPosition: true })
     }
   }
 
   setSecondaryFocus = secondaryFocus => this.setState({ secondaryFocus })
 
-  getLoadingStatus() {
+  getLoadingStatus () {
     if (this.state.contentHeightPx) return null
-    if (typeof this.state.loadingStatus === "string") {
+    if (typeof this.state.loadingStatus === 'string') {
       return <div id="document-view-loading">{this.state.loadingStatus}</div>
     }
-    if (typeof this.state.loadingStatus === "number") {
+    if (typeof this.state.loadingStatus === 'number') {
       return <div id="document-view-loading">
           <span>Downloading...</span>
           <progress class="styled-progress" max="1" value={this.state.loadingStatus} />
@@ -405,35 +405,35 @@ export default class ContentView extends Component {
 
   updateAnnotation = loc => {
     let eventStore
-    if (loc.getOrientation() === "child") eventStore = this.annotationChildEvents
-    else if (loc.getOrientation() === "parent") eventStore = this.annotationParentEvents
+    if (loc.getOrientation() === 'child') eventStore = this.annotationChildEvents
+    else if (loc.getOrientation() === 'parent') eventStore = this.annotationParentEvents
     this.setState(oldState => {
-      const filteredLoc = this.filterAnnotations(oldState.annotationFilter, {null: loc})
+      const filteredLoc = this.filterAnnotations(oldState.annotationFilter, { null: loc })
       const isInsertable = this.insertable(loc)
       if (isInsertable) eventStore[loc.getChild()] = loc
       else delete eventStore[loc.getChild()]
-      let filteredAnnotationContents = [... oldState.filteredAnnotationContents]
+      let filteredAnnotationContents = [...oldState.filteredAnnotationContents]
       if (filteredLoc.length > 0 && isInsertable) { // if it passes the filter
         // check if it's already there, and either replace (where appropriate) or insert it
         const idx = filteredAnnotationContents.findIndex(annot => annot.getChild() === loc.getChild())
         if (idx > -1) {
           // we don't replace children with parents - children are higher priority
-          if (filteredAnnotationContents[idx].getOrientation() === "parent") filteredAnnotationContents[idx] = loc
-          if (loc.getOrientation() === "child") filteredAnnotationContents[idx] = loc
+          if (filteredAnnotationContents[idx].getOrientation() === 'parent') filteredAnnotationContents[idx] = loc
+          if (loc.getOrientation() === 'child') filteredAnnotationContents[idx] = loc
         } else filteredAnnotationContents.push(filteredLoc[0])
       } else { // if it doesn't pass, check if it's already there
         const idx = filteredAnnotationContents.findIndex(annot => annot.getChild() === loc.getChild())
         if (idx > -1 && filteredAnnotationContents[idx].getOrientation() === loc.getOrientation()) {
           // if it is there, replace with an appropriate fallback, or just remove it,
           switch (loc.getOrientation()) {
-            case "child" : {
+            case 'child' : {
               // If there's a fallback parent available, use that
               const maybeParent = this.annotationParentEvents[loc.getChild()]
               if (maybeParent) filteredAnnotationContents[idx] = maybeParent
               else filteredAnnotationContents = filteredAnnotationContents.filter(annot => annot.getChild() !== loc.getChild())
               break
             }
-            case "parent" : {
+            case 'parent' : {
               // If there's a fallback child available, use that
               const maybeChild = this.annotationChildEvents[loc.getChild()]
               if (maybeChild) filteredAnnotationContents[idx] = maybeChild
@@ -443,16 +443,16 @@ export default class ContentView extends Component {
           }
         }
       }
-      return {filteredAnnotationContents}
+      return { filteredAnnotationContents }
     })
   }
 
-  insertable(loc) {
+  insertable (loc) {
     return loc.isValid() &&
       // we infer that you are a member if you have unread. TODO Should do this more directly.
-      (!loc.isPrivate() || loc.getUnread() !== "All") &&
-      ( loc.getStatus() !== "pending" ||
-        ( loc.getStatus() === "pending" && loc.getCreator() === Client.client.getUserId())
+      (!loc.isPrivate() || loc.getUnread() !== 'All') &&
+      (loc.getStatus() !== 'pending' ||
+        (loc.getStatus() === 'pending' && loc.getCreator() === Client.client.getUserId())
       )
   }
 
@@ -476,7 +476,7 @@ export default class ContentView extends Component {
         .filter(this.insertable)
       for (const loc of locations) this.annotationChildEvents[loc.getChild()] = loc
       const mergedLocations = Object.assign({}, this.annotationParentEvents, this.annotationChildEvents)
-      this.setState({filteredAnnotationContents: this.filterAnnotations(this.state.annotationFilter, mergedLocations)})
+      this.setState({ filteredAnnotationContents: this.filterAnnotations(this.state.annotationFilter, mergedLocations) })
     } else setTimeout(this.initializeAnnotations, 500) // keep polling until the room is available
   }
 
@@ -485,7 +485,7 @@ export default class ContentView extends Component {
     const searchText = []
     const searchMembers = []
     const searchFlags = []
-    const searchWords = search.split(" ")
+    const searchWords = search.split(' ')
     for (const word of searchWords) {
       if (word.slice(0, 1) === '@') searchMembers.push(word.slice(1))
       else if (word.slice(0, 1) === '~') searchFlags.push(word.slice(1))
@@ -493,12 +493,12 @@ export default class ContentView extends Component {
     }
     return locations.filter(loc => {
       let flagged = true
-      if (searchFlags.includes("me")) { flagged = flagged && loc.getCreator() === Client.client.getUserId() }
-      if (searchFlags.includes("hour")) { flagged = flagged && (loc.event.getTs() > (Date.now() - 3600000)) }
-      if (searchFlags.includes("day")) { flagged = flagged && (loc.event.getTs() > (Date.now() - 86400000)) }
-      if (searchFlags.includes("week")) { flagged = flagged && (loc.event.getTs() > (Date.now() - 604800000)) }
-      if (searchFlags.includes("question")) { flagged = flagged && loc.isQuestion() }
-      if (searchFlags.includes("unread")) { flagged = flagged && loc.getUnread() }
+      if (searchFlags.includes('me')) { flagged = flagged && loc.getCreator() === Client.client.getUserId() }
+      if (searchFlags.includes('hour')) { flagged = flagged && (loc.event.getTs() > (Date.now() - 3600000)) }
+      if (searchFlags.includes('day')) { flagged = flagged && (loc.event.getTs() > (Date.now() - 86400000)) }
+      if (searchFlags.includes('week')) { flagged = flagged && (loc.event.getTs() > (Date.now() - 604800000)) }
+      if (searchFlags.includes('question')) { flagged = flagged && loc.isQuestion() }
+      if (searchFlags.includes('unread')) { flagged = flagged && loc.getUnread() }
       const membered = searchMembers.length
         ? searchMembers.some(member => loc.getCreator().toLowerCase().includes(member.toLowerCase()))
         : true
@@ -509,14 +509,14 @@ export default class ContentView extends Component {
     })
   }
 
-  getContentComponent() {
-    if (this.state.mimetype === "application/pdf") {
+  getContentComponent () {
+    if (this.state.mimetype === 'application/pdf') {
       const page = PdfContent.positionToPage(this.props.resourcePosition, this.state.room)
-      if (this.props.resourcePosition != page) { //important to allow type coercion via `=!` here.
-        History.replace(`/${encodeURIComponent(this.props.resourceAlias)}` + 
-          `/${page}` + 
-          `${this.props.roomFocused ? "/" + this.props.roomFocused : ""}` +
-          `${this.props.eventFocused ? "/" + this.props.eventFocused : ""}`
+      if (this.props.resourcePosition != page) { // important to allow type coercion via `=!` here.
+        History.replace(`/${encodeURIComponent(this.props.resourceAlias)}` +
+          `/${page}` +
+          `${this.props.roomFocused ? `/${this.props.roomFocused}` : ''}` +
+          `${this.props.eventFocused ? `/${this.props.eventFocused}` : ''}`
         )
       }
       // TODO: Could DRY props here if the names were more uniform
@@ -547,14 +547,14 @@ export default class ContentView extends Component {
           />
     } else if (this.state.mimetype?.match(/^audio|^video/)) {
       const timestamp = MediaContent.positionToTimestamp(this.props.resourcePosition, this.state.room)
-      if (this.props.resourcePosition != timestamp) { //important to allow type coercion via `=!` here.
-        History.replace(`/${encodeURIComponent(this.props.resourceAlias)}` + 
-          `/${timestamp}` + 
-          `${this.props.roomFocused ? "/" + this.props.roomFocused : ""}` +
-          `${this.props.eventFocused ? "/" + this.props.eventFocused : ""}`
+      if (this.props.resourcePosition != timestamp) { // important to allow type coercion via `=!` here.
+        History.replace(`/${encodeURIComponent(this.props.resourceAlias)}` +
+          `/${timestamp}` +
+          `${this.props.roomFocused ? `/${this.props.roomFocused}` : ''}` +
+          `${this.props.eventFocused ? `/${this.props.eventFocused}` : ''}`
         )
       }
-      return <MediaContent 
+      return <MediaContent
             filteredAnnotationContents={this.state.filteredAnnotationContents}
             ref={this.content}
             key={this.props.resourceAlias} // tear this down when resource changes
@@ -576,7 +576,7 @@ export default class ContentView extends Component {
             setMediaLoadingStatus={this.setLoadingStatus}
           />
     } else if (this.state.mimetype?.match(/^image/)) {
-      return <ImageContent 
+      return <ImageContent
             filteredAnnotationContents={this.state.filteredAnnotationContents}
             ref={this.content}
             key={this.props.resourceAlias} // tear this down when resource changes
@@ -600,11 +600,11 @@ export default class ContentView extends Component {
             zoomFactor={this.state.zoomFactor}
             setZoom={this.setZoom}
           />
-    } else return null
+    } return null
   }
 
-  getNavComponent() {
-    if (this.state.mimetype === "application/pdf") {
+  getNavComponent () {
+    if (this.state.mimetype === 'application/pdf') {
       const page = PdfContent.positionToPage(this.props.resourcePosition, this.state.room)
       return <DocumentNavbar hasSelection={this.state.hasSelection}
         annotationsVisible={this.state.annotationsVisible}
@@ -672,20 +672,20 @@ export default class ContentView extends Component {
         setNavHeight={this.setNavHeight}
         setZoom={this.setZoom}
         />
-    } else return null
+    } return null
   }
 
-  render(props, state) {
+  render (props, state) {
     const dynamicDocumentStyle = {
-      "--zoomFactor": state.zoomFactor,
-      "--navHeight": `${state.navHeight}px`,
-      "--contentWidthPx": `${state.contentWidthPx}px`,
-      "--contentHeightPx": `${state.contentHeightPx}px`,
-      "--chatVisible": state.chatVisible ? 1 : 0,
-      "--listingVisible": state.listingVisible ? 1 : 0,
-      "--chatFocused": state.focus ? 1 : 0,
-      "--selectColor": this.userColor.solid,
-      "--mobileButtonColor": state.mobileButtonColor,
+      '--zoomFactor': state.zoomFactor,
+      '--navHeight': `${state.navHeight}px`,
+      '--contentWidthPx': `${state.contentWidthPx}px`,
+      '--contentHeightPx': `${state.contentHeightPx}px`,
+      '--chatVisible': state.chatVisible ? 1 : 0,
+      '--listingVisible': state.listingVisible ? 1 : 0,
+      '--chatFocused': state.focus ? 1 : 0,
+      '--selectColor': this.userColor.solid,
+      '--mobileButtonColor': state.mobileButtonColor,
     }
     return <div
       style={dynamicDocumentStyle}
@@ -697,7 +697,7 @@ export default class ContentView extends Component {
       onTouchCancel={this.handleTouchEnd}
       data-annotations-hidden={!state.annotationsVisible}
       data-pindrop-mode={state.pindropMode
-        ? (state.pindropMode?.x && "placed") || "unplaced"
+        ? (state.pindropMode?.x && 'placed') || 'unplaced'
         : false
       }
       onPointerMove={this.handlePointerMove}>
@@ -720,7 +720,7 @@ export default class ContentView extends Component {
           : <div class="panel-widget-1" />
         }
         <PanelHandle visible={state.listingVisible} id="panel-handle-2" offsetVar="--dragOffset-2" contentContainer={this.contentContainer} />
-        { state.listingType === "search"
+        { state.listingType === 'search'
           ? <SearchResults
               class="panel-widget-2"
               searchString={state.searchString}
@@ -748,13 +748,15 @@ export default class ContentView extends Component {
             />
           }
         <div class="panel-widget-controls">
-          {state.room ? <RoomIcon 
+          {state.room
+            ? <RoomIcon
             roomId={state.room.roomId}
             size={42}
             topic={state.room.getLiveTimeline().getState(Matrix.EventTimeline.FORWARDS)
-              .getStateEvents(Matrix.EventType.RoomTopic, "")?.getContent()?.topic}
+              .getStateEvents(Matrix.EventType.RoomTopic, '')?.getContent()?.topic}
             name={state.room.name}
-            avatarUrl={state.room.getMxcAvatarUrl()} /> : null }
+            avatarUrl={state.room.getMxcAvatarUrl()} />
+            : null }
           <hr />
           <ToolTip placement="left" content="Show chat">
             <button data-active={state.chatVisible} disabled={!state.focus} id="show-chat" onclick={this.toggleChat}>
@@ -789,7 +791,7 @@ class PanelHandle extends Component {
   }
 
   startDrag = e => {
-    this.props.contentContainer.current.style.setProperty('--transitionSizing', "unset")
+    this.props.contentContainer.current.style.setProperty('--transitionSizing', 'unset')
     this.props.contentContainer.current.setPointerCapture(e.pointerId)
     this.startingClientX = e.clientX + this.dragOffset
     this.props.contentContainer.current.addEventListener('pointermove', this.handlePointerMove)
@@ -800,7 +802,7 @@ class PanelHandle extends Component {
     })
   }
 
-  render(props) {
+  render (props) {
     if (props.visible) return <div id={props.id} onpointerdown={this.startDrag} class="panel-handle"><div>{Icons.handleVertical}</div></div>
   }
 }

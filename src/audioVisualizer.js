@@ -1,7 +1,7 @@
-import { h, createRef, Component } from 'preact';
+import { h, createRef, Component } from 'preact'
 
 export default class AudioVisualizer extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
     this.analyser = audioCtx.createAnalyser()
@@ -60,7 +60,7 @@ export default class AudioVisualizer extends Component {
     requestAnimationFrame(this.draw)
   }
 
-  render(props) {
+  render (props) {
     return <canvas class={`audioVisualizer ${props.class}`}
       onclick={props.onclick}
       height={props.height}

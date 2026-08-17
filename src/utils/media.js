@@ -1,5 +1,5 @@
-import extractPngChunks from "png-chunks-extract"
-import { encode } from "blurhash"
+import extractPngChunks from 'png-chunks-extract'
+import { encode } from 'blurhash'
 
 // The below is based on https://github.com/matrix-org/matrix-react-sdk/blob/develop/src/ContentMessages.tsx
 
@@ -10,7 +10,7 @@ const PHYS_HIDPI = [0x00, 0x00, 0x16, 0x25, 0x00, 0x00, 0x16, 0x25, 0x01]
 const MAX_WIDTH = 800
 const MAX_HEIGHT = 600
 
-function imagePromiseFromFile(imageFile) {
+function imagePromiseFromFile (imageFile) {
   // Load the file into an html element
   const img = new Image()
   const objectUrl = URL.createObjectURL(imageFile)
@@ -25,7 +25,7 @@ function imagePromiseFromFile(imageFile) {
   return imgPromise
 }
 
-export function createThumbnail( element, inputWidth, inputHeight, mimeType) {
+export function createThumbnail (element, inputWidth, inputHeight, mimeType) {
   return new Promise((resolve) => {
     let targetWidth = inputWidth
     let targetHeight = inputHeight
@@ -38,10 +38,10 @@ export function createThumbnail( element, inputWidth, inputHeight, mimeType) {
       targetWidth = MAX_WIDTH
     }
 
-    const canvas = document.createElement("canvas")
+    const canvas = document.createElement('canvas')
     canvas.width = targetWidth
     canvas.height = targetHeight
-    canvas.getContext("2d").drawImage(element, 0, 0, targetWidth, targetHeight)
+    canvas.getContext('2d').drawImage(element, 0, 0, targetWidth, targetHeight)
     canvas.toBlob((thumbnail) => {
       resolve({
         info: {
@@ -60,13 +60,13 @@ export function createThumbnail( element, inputWidth, inputHeight, mimeType) {
   })
 }
 
-export async function loadImageElement(imageFile) {
+export async function loadImageElement (imageFile) {
   const imgPromise = imagePromiseFromFile(imageFile)
 
   // check for hi-dpi PNGs and fudge display resolution as needed.
   // this is mainly needed for macOS screencaps
   let parsePromise
-  if (imageFile.type === "image/png") {
+  if (imageFile.type === 'image/png') {
     // in practice macOS happens to order the chunks so they fall in
     // the first 0x1000 bytes (thanks to a massive ICC header).
     // Thus we could slice the file down to only sniff the first 0x1000
@@ -88,10 +88,10 @@ export async function loadImageElement(imageFile) {
   const [hidpi, img] = await Promise.all([parsePromise, imgPromise])
   const width = hidpi ? (img.width >> 1) : img.width
   const height = hidpi ? (img.height >> 1) : img.height
-  return {width, height, img}
+  return { width, height, img }
 }
 
-function readFileAsArrayBuffer(file) {
+function readFileAsArrayBuffer (file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = e => resolve(e.target.result)
@@ -100,7 +100,7 @@ function readFileAsArrayBuffer(file) {
   })
 }
 
-export function loadMediaElement(mediaFile, tag) {
+export function loadMediaElement (mediaFile, tag) {
   return new Promise((resolve, reject) => {
     // Load the file into an html element
     const element = document.createElement(tag)
@@ -119,7 +119,7 @@ export function loadMediaElement(mediaFile, tag) {
   })
 }
 
-export async function blurhashFromFile(imageFile) {
+export async function blurhashFromFile (imageFile) {
   const imgPromise = imagePromiseFromFile(imageFile)
   const img = await imgPromise
   let targetWidth = img.width
@@ -132,11 +132,11 @@ export async function blurhashFromFile(imageFile) {
     targetHeight = Math.floor(targetHeight * (100 / targetWidth))
     targetWidth = 100
   }
-  const canvas = document.createElement("canvas");
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-  const context = canvas.getContext("2d");
-  context.drawImage(img, 0, 0, targetWidth, targetHeight);
-  const data = context.getImageData(0, 0, targetWidth, targetHeight);
+  const canvas = document.createElement('canvas')
+  canvas.width = targetWidth
+  canvas.height = targetHeight
+  const context = canvas.getContext('2d')
+  context.drawImage(img, 0, 0, targetWidth, targetHeight)
+  const data = context.getImageData(0, 0, targetWidth, targetHeight)
   return encode(data.data, data.width, data.height, 4, 4)
 }

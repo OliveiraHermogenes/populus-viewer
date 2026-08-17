@@ -1,25 +1,25 @@
-import { h, createRef, Component } from 'preact';
-import * as Layout from "./utils/layout.js"
-import * as Matrix from "matrix-js-sdk"
-import { UserColor } from "./utils/colors.js"
+import { h, createRef, Component } from 'preact'
+import * as Layout from './utils/layout.js'
+import * as Matrix from 'matrix-js-sdk'
+import { UserColor } from './utils/colors.js'
 import QuadPoints from './utils/quadPoints.js'
 import Client from './client.js'
 import './styles/annotation-layer.css'
 import * as Icons from './icons.js'
 
 export default class AnnotationLayer extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
-    this.state = {typing: {}}
+    this.state = { typing: {} }
     this.handleTypingNotification = this.handleTypingNotification.bind(this)
   }
 
-  componentDidMount() {
-    Client.client.on("RoomMember.typing", this.handleTypingNotification)
+  componentDidMount () {
+    Client.client.on('RoomMember.typing', this.handleTypingNotification)
   }
 
   componentDidUnmount () {
-    Client.client.off("RoomMember.typing", this.handleTypingNotification)
+    Client.client.off('RoomMember.typing', this.handleTypingNotification)
   }
 
   handleTypingNotification = (event, member) => {
@@ -30,21 +30,21 @@ export default class AnnotationLayer extends Component {
       this.setState(prevState => {
         const myId = Client.client.getUserId()
         const typingOtherThanMe = event.getContent().user_ids.filter(x => x !== myId)
-        return {typing: { ...prevState.typing, [member.roomId]: typingOtherThanMe}}
+        return { typing: { ...prevState.typing, [member.roomId]: typingOtherThanMe } }
       })
     }
   }
 
   filterAnnotations = loc => loc.getPageIndex() === parseInt(this.props.pageFocused, 10)
 
-  sortAnnotations = (a,b) => {
+  sortAnnotations = (a, b) => {
     if (!a.getRect() || !b.getRect()) return 0
     if (a.getRect().top < b.getRect().top) return 1
     if (b.getRect().top < a.getRect().top) return -1
     return 0
   }
 
-  updateGutter(gutter, loc) {
+  updateGutter (gutter, loc) {
     for (const key in gutter) {
       if (gutter[key].getRect().bottom >= loc.getRect().top) delete gutter[key]
     }
@@ -59,7 +59,7 @@ export default class AnnotationLayer extends Component {
     }
   }
 
-  getAnnotations() {
+  getAnnotations () {
     const theRoom = Client.client.getRoom(this.props.roomId)
     const focusId = this.props.focus?.getChild()
     let annotations = []
@@ -80,9 +80,9 @@ export default class AnnotationLayer extends Component {
       const rightGutter = {}
       annotations = annotationData.map(loc => {
         const annotationId = loc.getChild()
-        const rightSide = this.props.fixedSide 
-          ? this.props.fixedSide === "right"
-          : null 
+        const rightSide = this.props.fixedSide
+          ? this.props.fixedSide === 'right'
+          : null
         switch (loc.getType()) {
           case 'text': return <Pindrop
             key={loc.event.getId()}
@@ -108,13 +108,14 @@ export default class AnnotationLayer extends Component {
               pdfHeightAdjustedPx={this.props.pdfHeightAdjustedPx}
               location={loc} />
           }
+          default: return null
         }
       })
     }
     return annotations
   }
 
-  render(props) {
+  render (props) {
     return (
       <div
         ref={props.annotationLayerWrapper}
@@ -141,7 +142,7 @@ function PindropPreview (props) {
 }
 
 class Pindrop extends Component {
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate (nextProps) {
     if (nextProps.pdfWidthAdjusted === 0) return false
     if (nextProps.pdfHeightAdjustedPx === this.props.pdfHeightAdjustedPx) return
     if (!this.positioned) {
@@ -158,8 +159,8 @@ class Pindrop extends Component {
 
   top = this.props.pdfHeightAdjustedPx - this.props.location.getRect().top
 
-  render(props) {
-    const typing = typeof (props.typing) === "object" && Object.keys(props.typing).length > 0 ? true : null
+  render (props) {
+    const typing = typeof (props.typing) === 'object' && Object.keys(props.typing).length > 0 ? true : null
     return <span
       onclick={this.setFocus}
       class="annotation-pindrop"
@@ -177,22 +178,21 @@ class Pindrop extends Component {
 }
 
 class Highlight extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
-    this.state = {rightSide: this.calculateSide(props)}
+    this.state = { rightSide: this.calculateSide(props) }
   }
 
-  calculateSide(props) {
-      if (props.pdfWidthAdjustedPx > this.boundingRect.width * 2) {
-        const rightMargin = props.pdfWidthAdjustedPx - (this.boundingRect.width + this.boundingRect.x)
-        if (rightMargin < this.boundingRect.x) return true
-        else return false
-      } else {
-        return props.location.getChild().charCodeAt(1) % 2 === 1
-      }
+  calculateSide (props) {
+    if (props.pdfWidthAdjustedPx > this.boundingRect.width * 2) {
+      const rightMargin = props.pdfWidthAdjustedPx - (this.boundingRect.width + this.boundingRect.x)
+      if (rightMargin < this.boundingRect.x) return true
+      return false
+    }
+    return props.location.getChild().charCodeAt(1) % 2 === 1
   }
 
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate (nextProps) {
     if (nextProps.pdfWidthAdjustedPx === 0) return false
     if (nextProps.pdfHeightAdjustedPx === this.props.pdfHeightAdjustedPx) return
     if (!this.positioned) {
@@ -205,7 +205,7 @@ class Highlight extends Component {
       this.clientRects = this.props.location.getQuadPoints().map(qp =>
         QuadPoints.fromQuadArray(qp).toDOMRectInHeight(nextProps.pdfHeightAdjustedPx)
       )
-      this.setState({rightSide: this.calculateSide(nextProps)})
+      this.setState({ rightSide: this.calculateSide(nextProps) })
     }
   }
 
@@ -226,7 +226,7 @@ class Highlight extends Component {
 
   userColor = new UserColor(this.props.location.getCreator())
 
-  render(props, state) {
+  render (props, state) {
     if (!this.props.pdfWidthAdjustedPx) return null
     const spans = this.clientRects.map(
       rect => <RectSpan
@@ -237,7 +237,7 @@ class Highlight extends Component {
         rect={rect}
       />
     )
-    const typing = typeof (props.typing) === "object" && Object.keys(props.typing).length > 0 ? true : null
+    const typing = typeof (props.typing) === 'object' && Object.keys(props.typing).length > 0 ? true : null
     return <div
       style={this.userColor.styleVariables}
       data-annotation-typing={typing}
@@ -258,11 +258,11 @@ class Highlight extends Component {
 }
 
 class BarTab extends Component {
-  componentDidMount() {
+  componentDidMount () {
     Layout.positionRelativeAt(this.getTabRect(), this.ref.current, 1)
   }
 
-  componentDidUpdate() {
+  componentDidUpdate () {
     Layout.positionRelativeAt(this.getTabRect(), this.ref.current, this.props.zoomFactor)
   }
 
@@ -274,7 +274,7 @@ class BarTab extends Component {
       : new DOMRect(5 - (this.props.gutterDepth * 10), this.props.rect.y, 3, this.props.rect.height)
   }
 
-  render(props) {
+  render (props) {
     return <span
       onclick={props.setFocus}
       class="annotation-bartab"
@@ -287,15 +287,15 @@ class BarTab extends Component {
 class RectSpan extends Component {
   ref = createRef()
 
-  componentDidMount() { 
-    Layout.positionRelativeAt(this.props.rect, this.ref.current, this.props.zoomFactor) 
+  componentDidMount () {
+    Layout.positionRelativeAt(this.props.rect, this.ref.current, this.props.zoomFactor)
   }
 
-  componentDidUpdate() { 
-    Layout.positionRelativeAt(this.props.rect, this.ref.current, this.props.zoomFactor) 
+  componentDidUpdate () {
+    Layout.positionRelativeAt(this.props.rect, this.ref.current, this.props.zoomFactor)
   }
 
-  render(props) {
+  render (props) {
     return <span onclick={props.setFocus} data-annotation ref={this.ref} />
   }
 }

@@ -1,41 +1,40 @@
 import Client from './client.js'
-import { h, Component } from 'preact';
+import { h, Component } from 'preact'
 import { RoomColor } from './utils/colors.js'
 import ToolTip from './utils/tooltip.js'
-import * as Icons from './icons.js' 
 import './styles/roomIcon.css'
 
 export default class RoomIcon extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       joined: this.amJoined(),
       loaded: false,
       avatarUrl: props.avatarUrl
-        ? Client.client.mxcUrlToHttp(props.avatarUrl, 35, 35, "crop", false, true, true)
+        ? Client.client.mxcUrlToHttp(props.avatarUrl, 35, 35, 'crop', false, true, true)
         : null
     }
   }
 
-  amJoined = _ => !!(Client.client.getRoom(this.props.roomId)?.getMyMembership() === "join")
+  amJoined = _ => !!(Client.client.getRoom(this.props.roomId)?.getMyMembership() === 'join')
 
   componentDidMount () {
-    Client.client.on("Room", this.handleRoom)
-    Client.client.on("RoomState.events", this.handleRoom)
+    Client.client.on('Room', this.handleRoom)
+    Client.client.on('RoomState.events', this.handleRoom)
   }
 
   componentDidUnmount () {
-    Client.client.on("Room", this.handleRoom)
-    Client.client.on("RoomState.events", this.handleRoom)
+    Client.client.on('Room', this.handleRoom)
+    Client.client.on('RoomState.events', this.handleRoom)
   }
 
   handleRoom = (e, r) => {
     if (e.roomId === this.props.roomId || r?.roomId === this.props.roomId) {
-      if (e.getType() === "m.room.avatar") {
+      if (e.getType() === 'm.room.avatar') {
         this.setState({
           joined: this.amJoined(),
           avatarUrl: e.getContent().url
-            ? Client.client.mxcUrlToHttp(e.getContent().url, 35, 35, "crop", false, true, true)
+            ? Client.client.mxcUrlToHttp(e.getContent().url, 35, 35, 'crop', false, true, true)
             : null
         })
       } else {
@@ -54,18 +53,20 @@ export default class RoomIcon extends Component {
   roomColor = new RoomColor(this.props.name)
 
   toolTipContent = `<h3>${this.props.name}</h3>${
-    this.props.topic ? `<p>${this.props.topic}</p>` : ""}${
-      this.props.numJoinedMembers ? `<span><svg
+    this.props.topic ? `<p>${this.props.topic}</p>` : ''}${
+      this.props.numJoinedMembers
+? `<span><svg
       xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24
       24" fill="none" stroke="currentColor" stroke-width="2"
       stroke-linecap="round" stroke-linejoin="round" class="feather
       feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
         /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87"
         /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>:
-      ${this.props.numJoinedMembers}` : ""
+      ${this.props.numJoinedMembers}`
+: ''
     }`
 
-  render(props, state) {
+  render (props, state) {
     return <ToolTip content={this.toolTipContent} placement="bottom-start" allowHTML={true} theme="info">
         <div onclick={this.handleClick}
         data-joined={state.joined}
@@ -73,8 +74,8 @@ export default class RoomIcon extends Component {
         class="room-icon"
         style={{
           cursor: state.joined
-            ? (props.activeClick && "pointer")
-            : (props.inactiveClick && "pointer"),
+            ? (props.activeClick && 'pointer')
+            : (props.inactiveClick && 'pointer'),
           width: props.size,
           height: props.size,
           lineHeight: `${props.size}px`,
@@ -93,7 +94,7 @@ export default class RoomIcon extends Component {
   }
 }
 
-export function RoomIconPlaceholder(props) {
+export function RoomIconPlaceholder (props) {
   return <div class="room-icon"
       data-joined
       data-placeholder
@@ -101,6 +102,6 @@ export function RoomIconPlaceholder(props) {
         width: props.size,
         height: props.size,
         lineHeight: `${props.size}px`,
-        "--room_light" : "var(--low-contrast-background)"
+        '--room_light': 'var(--low-contrast-background)'
       }} />
 }

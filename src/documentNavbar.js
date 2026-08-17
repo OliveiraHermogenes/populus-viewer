@@ -1,20 +1,20 @@
-import { h, createRef, Component } from 'preact';
-import * as Icons from './icons.js';
-import * as Matrix from "matrix-js-sdk"
-import Location from "./utils/location.js"
-import ToolTip from "./utils/tooltip.js"
-import { UserColor } from "./utils/colors.js"
-import './styles/navbar.css';
+import { h, createRef, Component } from 'preact'
+import * as Icons from './icons.js'
+import * as Matrix from 'matrix-js-sdk'
+import Location from './utils/location.js'
+import ToolTip from './utils/tooltip.js'
+import { UserColor } from './utils/colors.js'
+import './styles/navbar.css'
 import History from './history.js'
-import Resource from "./utils/resource.js"
+import Resource from './utils/resource.js'
 import Client from './client.js'
 import Modal from './modal.js'
 import ManageMembership from './manageMembership.js'
 import { downloadBlob } from './utils/download.js'
 
 export default class DocumentNavbar extends Component {
-  constructor(props) {
-    super(props);
+  constructor (props) {
+    super(props)
     // Could add a listener to update this live
     const roomState = props.room.getLiveTimeline().getState(Matrix.EventTimeline.FORWARDS)
     this.canAnnotate = roomState.maySendStateEvent(Matrix.EventType.SpaceChild, Client.client.getUserId())
@@ -23,35 +23,35 @@ export default class DocumentNavbar extends Component {
       pageViewVisible: false,
       moreOptionsVisible: false,
       pageFocused: false,
-    };
+    }
   }
 
-  componentDidMount() {
+  componentDidMount () {
     document.addEventListener('keydown', this.handleKeydown)
   }
 
-  componentWillUnmount() {
+  componentWillUnmount () {
     document.removeEventListener('keydown', this.handleKeydown)
   }
 
   handleKeydown = e => {
     if (e.shiftKey) return // don't capture shift-modified arrow keys, these change the text selection
-    if (e.key === 'j' || e.key === "ArrowRight") {
+    if (e.key === 'j' || e.key === 'ArrowRight') {
       e.preventDefault() // block default scrolling behavior
       this.nextPage()
     }
-    if (e.key === 'k' || e.key === "ArrowLeft") {
+    if (e.key === 'k' || e.key === 'ArrowLeft') {
       e.preventDefault() // block default scrolling behavior
       this.prevPage()
     }
-    if (e.key === "ArrowUp") {
+    if (e.key === 'ArrowUp') {
       e.preventDefault() // block default scrolling behavior
       this.props.contentContainer.current.scroll({
         top: this.props.contentContainer.current.scrollTop - 100,
         left: this.props.contentContainer.current.scrollLeft
       })
     }
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault() // block default scrolling behavior
       this.props.contentContainer.current.scroll({
         top: this.props.contentContainer.current.scrollTop + 100,
@@ -69,17 +69,17 @@ export default class DocumentNavbar extends Component {
   toolTipOffset = [0, 30]
 
   handleInput = e => {
-    if (/^[0-9]*$/.test(e.target.value)) this.setState({value: e.target.value})
-    else this.setState({ value: "" })
+    if (/^[0-9]*$/.test(e.target.value)) this.setState({ value: e.target.value })
+    else this.setState({ value: '' })
   }
 
   prevPage = _ => {
     const sparePages = this.props.content.current.state.showSecondary ? 1 : 0
     if (this.props.pageFocused > 1) {
-      History.push(`/${encodeURIComponent(this.props.resourceAlias)}` + 
-        `/${Math.max(1, this.props.pageFocused - (1 + sparePages))}` + 
-        `${this.props.roomFocused ? "/" + this.props.roomFocused : ""}` +
-        `${this.props.eventFocused ? "/" + this.props.eventFocused : ""}`
+      History.push(`/${encodeURIComponent(this.props.resourceAlias)}` +
+        `/${Math.max(1, this.props.pageFocused - (1 + sparePages))}` +
+        `${this.props.roomFocused ? `/${this.props.roomFocused}` : ''}` +
+        `${this.props.eventFocused ? `/${this.props.eventFocused}` : ''}`
       )
     }
   }
@@ -87,57 +87,57 @@ export default class DocumentNavbar extends Component {
   nextPage = _ => {
     const sparePages = this.props.content.current.state.showSecondary ? 1 : 0
     if (this.props.pageFocused + sparePages < this.props.total) {
-      History.push(`/${encodeURIComponent(this.props.resourceAlias)}` + 
-        `/${Math.max(1, this.props.pageFocused + (1 + sparePages))}` + 
-        `${this.props.roomFocused ? "/" + this.props.roomFocused : ""}` +
-        `${this.props.eventFocused ? "/" + this.props.eventFocused : ""}`
+      History.push(`/${encodeURIComponent(this.props.resourceAlias)}` +
+        `/${Math.max(1, this.props.pageFocused + (1 + sparePages))}` +
+        `${this.props.roomFocused ? `/${this.props.roomFocused}` : ''}` +
+        `${this.props.eventFocused ? `/${this.props.eventFocused}` : ''}`
       )
     }
   }
 
-  handlePageFocus = _ => this.setState({ pageFocused: true, value: "" })
+  handlePageFocus = _ => this.setState({ pageFocused: true, value: '' })
 
   handlePageBlur = _ => this.setState({ pageFocused: false, value: this.props.pageFocused })
 
   handleSubmit = ev => {
-    ev.preventDefault();
+    ev.preventDefault()
     const currentPage = Number.isNaN(parseInt(this.state.value, 10)) ? 1 : parseInt(this.state.value, 10)
     if (currentPage > 0 && currentPage <= this.props.total) History.push(`/${encodeURIComponent(this.props.resourceAlias)}/${currentPage}/`)
-    else alert("Out of range");
+    else alert('Out of range')
   }
 
   handleClick = e => History.push(`/${encodeURIComponent(this.props.resourceAlias)}/${parseInt(e.target.value, 10)}`)
 
-  togglePageNav = _ => this.setState({pageViewVisible: !this.state.pageViewVisible})
+  togglePageNav = _ => this.setState({ pageViewVisible: !this.state.pageViewVisible })
 
   toggleMoreOptions = _ => {
     if (this.state.moreOptionsVisible) this.props.setNavHeight(75)
     else this.props.setNavHeight(150)
-    this.setState(oldState => { return {moreOptionsVisible: !oldState.moreOptionsVisible} })
+    this.setState(oldState => { return { moreOptionsVisible: !oldState.moreOptionsVisible } })
   }
 
-  mainMenu = _ => History.push("/")
+  mainMenu = _ => History.push('/')
 
   download = _ => {
     if (confirm("do you want to download the file you're annotating?")) {
       const file = new Resource(this.props.room)
       fetch(file.httpUrl)
         .then(res => res.blob())
-        .then(blob => downloadBlob(blob, file.file?.name || "download.pdf", file.mimetype))
+        .then(blob => downloadBlob(blob, file.file?.name || 'download.pdf', file.mimetype))
     }
   }
 
-  openMembership = _ => Modal.set(<ManageMembership room={this.props.room} />, "Manage Membership", `for ${this.props.room.name}`)
+  openMembership = _ => Modal.set(<ManageMembership room={this.props.room} />, 'Manage Membership', `for ${this.props.room.name}`)
 
   zoomOut = _ => this.props.setZoom(zoomFactor => zoomFactor - 0.1)
 
   zoomIn = _ => this.props.setZoom(zoomFactor => zoomFactor + 0.1)
 
-  componentDidUpdate() {
+  componentDidUpdate () {
     if (this.pageInput.current) this.pageInput.current.style.width = `${this.pageTotal.current.scrollWidth}px`
   }
 
-  render(props, state) {
+  render (props, state) {
     if (props.contentWidthPx) { // don't render until width is set
       return <nav id="page-nav">
           <Pages total={props.total}
@@ -153,7 +153,7 @@ export default class DocumentNavbar extends Component {
             <button onclick={this.mainMenu}>{Icons.home}</button>
           </ToolTip>
           <ToolTip content="Add annotation (Alt + a)" offset={this.toolTipOffset} >
-            <button disabled={this.canAnnotate && (props.hasSelection || props.pindropMode?.x) ? null : "disabled"}
+            <button disabled={this.canAnnotate && (props.hasSelection || props.pindropMode?.x) ? null : 'disabled'}
               onclick={props.openAnnotation}>{Icons.addAnnotation}
             </button>
           </ToolTip>
@@ -163,14 +163,14 @@ export default class DocumentNavbar extends Component {
             </button>
           </ToolTip>
           <ToolTip content="Go to previous page (k, ←)" offset={this.toolTipOffset}>
-            <button disabled={props.pageFocused > 1 ? null : "disabled"}
+            <button disabled={props.pageFocused > 1 ? null : 'disabled'}
               onclick={this.prevPage}>{Icons.chevronLeft}
             </button>
           </ToolTip>
           <form class="nav-position" onSubmit={this.handleSubmit}>
             <ToolTip content="Show page navigation" offset={this.toolTipOffset}>
               <button type="button"
-                class={state.pageViewVisible ? "nav-toggled" : null}
+                class={state.pageViewVisible ? 'nav-toggled' : null}
                 onclick={this.togglePageNav}>{Icons.page}
               </button>
             </ToolTip>
@@ -185,7 +185,7 @@ export default class DocumentNavbar extends Component {
             <span ref={this.pageTotal} id="nav-total-pages">{props.total}</span>
           </form>
           <ToolTip content="Go to next page (j, →)" offset={this.toolTipOffset}>
-            <button disabled={props.total > props.pageFocused ? null : "disabled"} 
+            <button disabled={props.total > props.pageFocused ? null : 'disabled'}
               onclick={this.nextPage}>{Icons.chevronRight}
             </button>
           </ToolTip>
@@ -195,7 +195,7 @@ export default class DocumentNavbar extends Component {
             </button>
           </ToolTip>
           <ToolTip content="Remove annotation (Alt + r)" offset={this.toolTipOffset}>
-            <button disabled={this.canAnnotate && props.focus && !props.hasSelection ? null : "disabled"}
+            <button disabled={this.canAnnotate && props.focus && !props.hasSelection ? null : 'disabled'}
               onclick={props.closeAnnotation}>{Icons.removeAnnotation}
             </button>
           </ToolTip>
@@ -236,22 +236,22 @@ export default class DocumentNavbar extends Component {
 }
 
 class Pages extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { typing: {} };
+  constructor (props) {
+    super(props)
+    this.state = { typing: {} }
     this.handleTypingNotifications = this.handleTypingNotification.bind(this)
   }
 
-  componentDidUpdate() {
-    this.currentPageElement.current?.scrollIntoView({inline: "center"})
+  componentDidUpdate () {
+    this.currentPageElement.current?.scrollIntoView({ inline: 'center' })
   }
 
-  componentDidMount() {
-    Client.client.on("RoomMember.typing", this.handleTypingNotification)
+  componentDidMount () {
+    Client.client.on('RoomMember.typing', this.handleTypingNotification)
   }
 
-  componentWillUnmount() {
-    Client.client.off("RoomMember.typing", this.handleTypingNotification)
+  componentWillUnmount () {
+    Client.client.off('RoomMember.typing', this.handleTypingNotification)
   }
 
   handleTypingNotification = (ev, member) => {
@@ -262,19 +262,19 @@ class Pages extends Component {
       this.setState(prevState => {
         const location = new Location(theChildRelation)
         const typingKey = location.location
-        return {typing: { ...prevState.typing, [typingKey]: ev.getContent().user_ids}}
+        return { typing: { ...prevState.typing, [typingKey]: ev.getContent().user_ids } }
       })
     }
   }
 
   currentPageElement = createRef()
 
-  render(props, state) {
-    const pagenos = Array.from({length: props.total}, (_, index) => index + 1);
+  render (props, state) {
+    const pagenos = Array.from({ length: props.total }, (_, index) => index + 1)
     const pages = pagenos.map(page => {
       let theClass, theUserColor
       if (state.typing[page] && state.typing[page][0]) {
-        theClass = "typing"
+        theClass = 'typing'
         theUserColor = new UserColor(state.typing[page][0])
       }
       return <button value={page}
@@ -283,9 +283,9 @@ class Pages extends Component {
         tabIndex={props.visibility ? 0 : -1}
         style={theUserColor?.styleVariables}
         onclick={props.handleClick}>{page}</button>
-    });
+    })
     pages[props.current - 1] = <button ref={this.currentPageElement} tabIndex={props.visibility ? 0 : -1} class="currentpage">{props.current}</button>
-    return <div class={props.visibility ? null : "nav-hidden"} id="nav-pages">
+    return <div class={props.visibility ? null : 'nav-hidden'} id="nav-pages">
         {pages}
       </div>
   }

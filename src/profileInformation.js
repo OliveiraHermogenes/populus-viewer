@@ -1,17 +1,17 @@
-import { h, createRef, Component } from 'preact';
+import { h, createRef, Component } from 'preact'
 import './styles/profileInformation.css'
-import { onlineOrAlert } from "./utils/alerts.js"
+import { onlineOrAlert } from './utils/alerts.js'
 import Client from './client.js'
 
 export default class ProfileInfomation extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     const me = Client.client.getUser(Client.client.getUserId())
     this.state = {
-      previewUrl: Client.client.getHttpUriForMxcFromHS(me.avatarUrl, 180, 180, "crop"),
+      previewUrl: Client.client.getHttpUriForMxcFromHS(me.avatarUrl, 180, 180, 'crop'),
       displayName: me.displayName
     }
-    if (localStorage.getItem("scrollbars") === "visible") this.scrollbarsVisible = true
+    if (localStorage.getItem('scrollbars') === 'visible') this.scrollbarsVisible = true
   }
 
   displayNameInput = createRef()
@@ -24,7 +24,7 @@ export default class ProfileInfomation extends Component {
 
   mainForm = createRef()
 
-  progressHandler = (progress) => this.setState({progress})
+  progressHandler = (progress) => this.setState({ progress })
 
   chooseAvatar = _ => this.avatarImageInput.current.click()
 
@@ -37,7 +37,7 @@ export default class ProfileInfomation extends Component {
   updatePreview = _ => {
     const theImage = this.avatarImageInput.current.files[0]
     if (theImage && /^image/.test(theImage.type)) {
-      this.setState({previewUrl: URL.createObjectURL(this.avatarImageInput.current.files[0]) })
+      this.setState({ previewUrl: URL.createObjectURL(this.avatarImageInput.current.files[0]) })
     }
   }
 
@@ -46,15 +46,15 @@ export default class ProfileInfomation extends Component {
     if (!onlineOrAlert()) return
     const theImage = this.avatarImageInput.current.files[0]
     const theDisplayName = this.displayNameInput.current.value
-    this.submitButton.current.setAttribute("disabled", true)
-    localStorage.setItem("scrollbars", this.scrollbarVisibleSelect.current.value)
+    this.submitButton.current.setAttribute('disabled', true)
+    localStorage.setItem('scrollbars', this.scrollbarVisibleSelect.current.value)
     document.documentElement.dataset.scrollbars = this.scrollbarVisibleSelect.current.value
     if (theDisplayName) await Client.client.setDisplayName(theDisplayName)
     if (theImage && /^image/.test(theImage.type)) {
       await Client.client.uploadContent(theImage, { progressHandler: this.progressHandler })
         .then(e => Client.client.setAvatarUrl(e.content_uri))
     } else if (!this.state.previewUrl) {
-      await Client.client.setAvatarUrl("null")
+      await Client.client.setAvatarUrl('null')
       // XXX this is a pretty awful hack. Discussion at https://github.com/matrix-org/matrix-doc/issues/1674
     }
     this.mainForm.current.reset()

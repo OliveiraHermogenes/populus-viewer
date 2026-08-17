@@ -3,7 +3,7 @@ import './styles/modal.css'
 import * as Icons from './icons.js'
 
 export default class Modal extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = { content: null }
     Modal.set = this.setContent
@@ -14,16 +14,16 @@ export default class Modal extends Component {
 
   hideModal = _ => {
     delete document.body.dataset.modalVisible
-    this.setState({content: null, title: null})
+    this.setState({ content: null, title: null })
   }
 
   setContent = (content, title, subtitle) => {
     document.body.dataset.modalVisible = true
-    this.setState({content, title, subtitle})
+    this.setState({ content, title, subtitle })
   }
 
-  //TODO: implement focus-trap to prevent focus from escaping modal
-  render(_, state) {
+  // TODO: implement focus-trap to prevent focus from escaping modal
+  render (_, state) {
     return state.content
       ? <div id="modal-popup">
         <div id="modal-background" onclick={this.hideModal} />

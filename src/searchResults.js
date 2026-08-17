@@ -1,11 +1,10 @@
-import { h, Fragment, createRef, Component } from 'preact';
+import { h, Fragment, createRef, Component } from 'preact'
 import './styles/searchResults.css'
-import * as Icons from "./icons.js"
-import History from "./history.js"
+import History from './history.js'
 import SearchBar from './search.js'
 
 export default class SearchResults extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       searchResults: [],
@@ -18,7 +17,7 @@ export default class SearchResults extends Component {
 
   searchInput = createRef()
 
-  componentDidMount() {
+  componentDidMount () {
     this.initializeSearch()
     document.addEventListener('keydown', this.handleKeydown)
     this.searchInput.current.focus()
@@ -28,12 +27,12 @@ export default class SearchResults extends Component {
     document.removeEventListener('keydown', this.handleKeydown)
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate (prevProps, prevState) {
     if (this.props.searchString !== prevProps.searchString && this.props.pdfText) this.initializeSearch()
     else if (this.state.searchLimit > prevState.searchLimit && this.props.pdfText) this.expandSearch()
   }
-  
-  resetSearch() {
+
+  resetSearch () {
     this.setState({
       searchResults: [],
       searchLimit: 20,
@@ -48,9 +47,9 @@ export default class SearchResults extends Component {
     }
     const searchResults = []
     // We strip out all non-alphanumerics, for fuzzy search
-    const word = this.props.searchString.toLowerCase().replace(/[^a-zA-Z0-9]/gm, "")
+    const word = this.props.searchString.toLowerCase().replace(/[^a-zA-Z0-9]/gm, '')
     for (const [page, text] of Object.entries(this.props.pdfText)) {
-      const cleantext = text.toLowerCase().replace(/[^a-zA-Z0-9]/gm, "")
+      const cleantext = text.toLowerCase().replace(/[^a-zA-Z0-9]/gm, '')
       const contexts = []
       let idx = cleantext.indexOf(word)
       let idx2 = idx + word.length
@@ -75,7 +74,7 @@ export default class SearchResults extends Component {
       if (contexts.length > 0) searchResults.push({ page, contexts })
       if (searchResults.length > 20) break
     }
-    this.setState({focusedResult: null, searchResults, searchLimit: 20})
+    this.setState({ focusedResult: null, searchResults, searchLimit: 20 })
   }
 
   expandSearch () {
@@ -85,10 +84,10 @@ export default class SearchResults extends Component {
     }
     const searchResults = this.state.searchResults
     const oldPage = searchResults.slice(-1)[0].page
-    const word = this.props.searchString.toLowerCase().replace(/[^a-zA-Z0-9]/gm, "")
+    const word = this.props.searchString.toLowerCase().replace(/[^a-zA-Z0-9]/gm, '')
     for (const [page, text] of Object.entries(this.props.pdfText)) {
       if (parseInt(page, 10) > parseInt(oldPage, 10)) {
-        const cleantext = text.toLowerCase().replace(/[^a-zA-Z0-9]/gm, "")
+        const cleantext = text.toLowerCase().replace(/[^a-zA-Z0-9]/gm, '')
         let idx = cleantext.indexOf(word)
         let idx2 = idx + word.length
         const contexts = []
@@ -114,7 +113,7 @@ export default class SearchResults extends Component {
         if (searchResults.length > this.state.searchLimit) break
       }
     }
-    this.setState({searchResults}, _ => {
+    this.setState({ searchResults }, _ => {
       this.limitRaised = false
     })
   }
@@ -135,7 +134,7 @@ export default class SearchResults extends Component {
     const toBottom = this.resultListing.current.scrollHeight - this.resultListing.current.clientHeight - this.resultListing.current.scrollTop
     if (toBottom < 100 && !this.limitRaised) {
       this.limitRaised = true
-      this.setState(oldState => { return {searchLimit: oldState.searchLimit + 20} })
+      this.setState(oldState => { return { searchLimit: oldState.searchLimit + 20 } })
     }
   }
 
@@ -148,7 +147,7 @@ export default class SearchResults extends Component {
     if (this.props.searchString.length < 1) this.props.endSearch()
   }
 
-  render(props, state) {
+  render (props, state) {
     return <div ref={this.resultListing}
       id="pdf-search-result-panel"
       onscroll={this.handleScroll}
@@ -185,7 +184,7 @@ export default class SearchResults extends Component {
 class SearchResult extends Component {
   focus = _ => {
     this.props.setFocus(this.props.index)
-    const newUrl = `/${encodeURIComponent(this.props.resourceAlias)}/${this.props.result.page}/${this.props.roomFocused ? this.props.roomFocused : ""}`
+    const newUrl = `/${encodeURIComponent(this.props.resourceAlias)}/${this.props.result.page}/${this.props.roomFocused ? this.props.roomFocused : ''}`
     History.push(newUrl)
     this.result.current.scrollIntoView()
     const narrow = document.body.offsetWidth <= 600
@@ -194,14 +193,14 @@ class SearchResult extends Component {
 
   result = createRef()
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate (prevProps) {
     if (this.props.focusedResult !== prevProps.focusedResult &&
       this.props.index === this.props.focusedResult) {
       this.focus()
     }
   }
 
-  render(props) {
+  render (props) {
     return <div ref={this.result} onClick={this.focus} data-focused-result={props.index === props.focusedResult} class="pdf-search-result">
       {props.result.contexts.map((context, idx) =>
         <div key={`${props.result.page}-${idx}`} class="result-context">… {context} …</div>)

@@ -1,9 +1,9 @@
 export default class QuadPoints {
-  static fromQuadArray([x1, y1, x2, y2, x3, y3, x4, y4]) {
+  static fromQuadArray ([x1, y1, x2, y2, x3, y3, x4, y4]) {
     return new QuadPoints(x1, y1, x2, y2, x3, y3, x4, y4)
   }
 
-  static fromRectIn(rect, elt, maybeDPI) {
+  static fromRectIn (rect, elt, maybeDPI) {
     const dpi = maybeDPI || 72
     const scale = 72 / dpi
     const bottomLeftX = rect.x
@@ -26,7 +26,7 @@ export default class QuadPoints {
     )
   }
 
-  constructor(x1, y1, x2, y2, x3, y3, x4, y4) {
+  constructor (x1, y1, x2, y2, x3, y3, x4, y4) {
     this.x1 = x1
     this.y1 = y1
     this.x2 = x2
@@ -37,7 +37,7 @@ export default class QuadPoints {
     this.y4 = y4
   }
 
-  toDOMRectInHeight(height, maybeDPI) {
+  toDOMRectInHeight (height, maybeDPI) {
     const dpi = maybeDPI || 72
     const scale = 72 / dpi
     const rect = this.getBoundingRect()
@@ -49,12 +49,12 @@ export default class QuadPoints {
     )
   }
 
-  getArray() {
+  getArray () {
     return [this.x1, this.y1, this.x2, this.y2, this.x3, this.y3, this.x4, this.y4]
       .map(Math.round)
   }
 
-  getBoundingRect() {
+  getBoundingRect () {
     return {
       left: Math.round(Math.min(this.x1, this.x2, this.x3, this.x4)),
       right: Math.round(Math.max(this.x1, this.x2, this.x3, this.x4)),

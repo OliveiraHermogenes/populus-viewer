@@ -1,34 +1,34 @@
-import { h, Component } from 'preact';
+import { Component } from 'preact'
 import tippy from 'tippy.js'
-import '../styles/tooltip.css';
+import '../styles/tooltip.css'
 
 export default class ToolTip extends Component {
-  componentDidMount() {
+  componentDidMount () {
     this.tippy = tippy(this.base, Object.assign({
       delay: [1500, null],
-      touch: ["hold", 1000]
+      touch: ['hold', 1000]
     }, this.props))
-    this.base.addEventListener("focusout", this.tippy.hide())
-    this.base.setAttribute("aria-label", this.props.content)
+    this.base.addEventListener('focusout', this.tippy.hide())
+    this.base.setAttribute('aria-label', this.props.content)
   }
 
-  componentWillUnmount() {
+  componentWillUnmount () {
     this.tippy.destroy()
   }
 
-  componentDidUpdate(prev) {
-    if (prev.content !== this.props.content) this.tippy.setProps(this.props) 
+  componentDidUpdate (prev) {
+    if (prev.content !== this.props.content) this.tippy.setProps(this.props)
   }
 
-  show() {
+  show () {
     this.tippy.show()
   }
 
-  hide() {
+  hide () {
     this.tippy.show()
   }
 
-  render(props) {
+  render (props) {
     return props.children
   }
 }

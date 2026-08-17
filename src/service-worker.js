@@ -1,31 +1,31 @@
-import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, CacheFirst } from 'workbox-strategies';
-import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-import { ExpirationPlugin } from 'workbox-expiration';
-import { precacheAndRoute } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing'
+import { NetworkFirst, CacheFirst } from 'workbox-strategies'
+import { CacheableResponsePlugin } from 'workbox-cacheable-response'
+import { ExpirationPlugin } from 'workbox-expiration'
+import { precacheAndRoute } from 'workbox-precaching'
 
 // extra precaching
-self.addEventListener("install", event => {
+self.addEventListener('install', event => {
   self.skipWaiting()
   event.waitUntil(
-    caches.open("static").then(cache => {
-      cache.add("https://rsms.me/inter/font-files/InterVariable.woff2?v=4.1");
-      cache.add("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap");
-      cache.add("https://cdn.jsdelivr.net/npm/katex@0.16.23/dist/katex.min.css");
+    caches.open('static').then(cache => {
+      cache.add('https://rsms.me/inter/font-files/InterVariable.woff2?v=4.1')
+      cache.add('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap')
+      cache.add('https://cdn.jsdelivr.net/npm/katex@0.16.23/dist/katex.min.css')
     })
-  );
-});
+  )
+})
 
-self.addEventListener("activate", (event) => {
+self.addEventListener('activate', (event) => {
   // bring all browser tabs under our control
-  event.waitUntil(clients.claim());
-});
+  event.waitUntil(self.clients.claim())
+})
 
 precacheAndRoute(self.__WB_MANIFEST)
 
 // we cache auth info in memory
-let authInfo = null;
-let authInfoPromise = null;
+let authInfo = null
+let authInfoPromise = null
 
 registerRoute(
   // dynamically cache thumbnails
@@ -35,7 +35,7 @@ registerRoute(
     cacheName: 'images',
     plugins: [
       {
-	requestWillFetch: addAuthorizationHeader
+        requestWillFetch: addAuthorizationHeader
       },
       new CacheableResponsePlugin({ statuses: [200] }),
       new ExpirationPlugin({
@@ -44,7 +44,7 @@ registerRoute(
       })
     ]
   })
-);
+)
 
 // network-first caching of aliases, roomHierarchy, and server data
 registerRoute(
@@ -59,7 +59,7 @@ registerRoute(
       new CacheableResponsePlugin({ statuses: [200] })
     ]
   })
-);
+)
 
 registerRoute(
   ({ request }) => request.url.includes('_matrix/client/v1/media/download/'),
@@ -67,19 +67,19 @@ registerRoute(
     cacheName: 'media',
     plugins: [
       {
-	requestWillFetch: addAuthorizationHeader
+        requestWillFetch: addAuthorizationHeader
       },
       new CacheableResponsePlugin({
         statuses: [200],
-        headers: { "content-type": "application/pdf" }
+        headers: { 'content-type': 'application/pdf' }
       }),
       new ExpirationPlugin({ maxEntries: 10 })
     ]
   })
-);
+)
 
 // Function to add authorization header, as per MSC3916
-async function addAuthorizationHeader({ request, event }) {
+async function addAuthorizationHeader ({ request, event }) {
   try {
     const client = await self.clients.get(event.clientId)
     if (client && !authInfo) {
@@ -96,7 +96,7 @@ async function addAuthorizationHeader({ request, event }) {
           mode: 'cors',
           credentials: 'omit',
           headers
-        });
+        })
       }
     }
   } catch (error) {
@@ -107,29 +107,29 @@ async function addAuthorizationHeader({ request, event }) {
 }
 
 // Function to request auth token from main thread
-async function getAuthInfo(client) {
-  if (authInfoPromise) return authInfoPromise;
+async function getAuthInfo (client) {
+  if (authInfoPromise) return authInfoPromise
 
   authInfoPromise = new Promise((resolve, reject) => {
     const authInfoTimeout = setTimeout(_ => {
       authInfoPromise = null // reset on timeout
-      reject(new Error("Auth info request timed out"))
-    }, 1000);
+      reject(new Error('Auth info request timed out'))
+    }, 1000)
 
     const handler = (event) => {
-      if (event.data && event.data.type === "REPLY_AUTH_INFO") {
+      if (event.data && event.data.type === 'REPLY_AUTH_INFO') {
         clearTimeout(authInfoTimeout)
         self.removeEventListener('message', handler)
         authInfoPromise = null // reset after success
         resolve(event.data.auth)
       }
-    };
+    }
 
-    self.addEventListener('message', handler);
+    self.addEventListener('message', handler)
     client.postMessage({
-      type: "ASK_AUTH_INFO"
-    });
-  });
+      type: 'ASK_AUTH_INFO'
+    })
+  })
 
   return authInfoPromise
 }

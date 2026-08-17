@@ -1,16 +1,15 @@
-import { h, Fragment, Component, createRef } from 'preact';
-import { lastViewed } from "./constants.js"
-import { decode } from "blurhash"
-import Resource from "./utils/resource.js"
-import Location from "./utils/location.js"
-import * as Matrix from "matrix-js-sdk"
+import { h, Fragment, Component, createRef } from 'preact'
+import { decode } from 'blurhash'
+import Resource from './utils/resource.js'
+import Location from './utils/location.js'
+import * as Matrix from 'matrix-js-sdk'
 import MemberPill from './memberPill.js'
 import Client from './client.js'
 import Modal from './modal.js'
 import ManageMembership from './manageMembership.js'
 import LeaveRoom from './leaveRoom.js'
 import { TagEditor, TagList } from './tagEditor.js'
-import ToolTip from "./utils/tooltip.js"
+import ToolTip from './utils/tooltip.js'
 import RoomSettings from './roomSettings.js'
 import { RoomColor } from './utils/colors.js'
 import { toWords } from './utils/strings.js'
@@ -19,32 +18,32 @@ import History from './history.js'
 import './styles/roomList.css'
 
 export default class RoomList extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       rooms: Client.client.getVisibleRooms().filter(Resource.hasResource),
-      sort: "ACTIVITY",
+      sort: 'ACTIVITY',
       sortOrder: 1,
-      memberLimit:15
+      memberLimit: 15
     }
   }
 
   componentDidMount () {
-    Client.client.on("Room", this.roomListener)
-    Client.client.on("Room.name", this.roomListener)
-    Client.client.on("RoomState.events", this.roomListener)
-    Client.client.on("Room.accountData", this.roomListener)
+    Client.client.on('Room', this.roomListener)
+    Client.client.on('Room.name', this.roomListener)
+    Client.client.on('RoomState.events', this.roomListener)
+    Client.client.on('Room.accountData', this.roomListener)
     // State events might cause excessive rerendering, but we can optimize for that later
     this.resetMemberLimit()
-    window.addEventListener("resize", this.resizeListener)
+    window.addEventListener('resize', this.resizeListener)
   }
 
   componentWillUnmount () {
-    Client.client.off("Room", this.roomListener)
-    Client.client.off("Room.name", this.roomListener)
-    Client.client.off("RoomState.events", this.roomListener)
-    Client.client.off("Room.accountData", this.roomListener)
-    window.removeEventListener("resize", this.resizeListener)
+    Client.client.off('Room', this.roomListener)
+    Client.client.off('Room.name', this.roomListener)
+    Client.client.off('RoomState.events', this.roomListener)
+    Client.client.off('Room.accountData', this.roomListener)
+    window.removeEventListener('resize', this.resizeListener)
   }
 
   roomList = createRef()
@@ -55,7 +54,7 @@ export default class RoomList extends Component {
       this.setState({
         rooms: Client.client.getVisibleRooms()
           .filter(Resource.hasResource)
-          .filter(room => room.getMyMembership() === "join")
+          .filter(room => room.getMyMembership() === 'join')
       })
     }, 1000)
   }
@@ -67,9 +66,11 @@ export default class RoomList extends Component {
 
   resetMemberLimit = _ => {
     if (this.roomList.current) {
-      this.roomList.current.clientWidth > 500 ? this.setState({memberLimit: 15})
-        : this.roomList.current.clientWidth > 300 ? this.setState({memberLimit: 5})
-        : this.setState({memberLimit: 2})
+      this.roomList.current.clientWidth > 500
+        ? this.setState({ memberLimit: 15 })
+        : this.roomList.current.clientWidth > 300
+          ? this.setState({ memberLimit: 5 })
+          : this.setState({ memberLimit: 2 })
     }
   }
 
@@ -92,11 +93,11 @@ export default class RoomList extends Component {
   byCreation = (a, b) => {
     const c1 = a.getLiveTimeline()
       .getState(Matrix.EventTimeline.FORWARDS)
-      .getStateEvents(Matrix.EventType.RoomCreate,"")
+      .getStateEvents(Matrix.EventType.RoomCreate, '')
       .getTs()
     const c2 = b.getLiveTimeline()
       .getState(Matrix.EventTimeline.FORWARDS)
-      .getStateEvents(Matrix.EventType.RoomCreate,"")
+      .getStateEvents(Matrix.EventType.RoomCreate, '')
       .getTs()
     if (c1 < c2) return 1 * this.state.sortOrder
     else if (c2 < c1) return -1 * this.state.sortOrder
@@ -105,25 +106,25 @@ export default class RoomList extends Component {
 
   sortByActivity = _ => {
     this.setState(oldState =>
-      oldState.sort === "ACTIVITY"
+      oldState.sort === 'ACTIVITY'
         ? { sortOrder: oldState.sortOrder * -1 }
-        : { sort: "ACTIVITY" }
+        : { sort: 'ACTIVITY' }
     )
   }
 
   sortByName = _ => {
     this.setState(oldState =>
-      oldState.sort === "NAME"
+      oldState.sort === 'NAME'
         ? { sortOrder: oldState.sortOrder * -1 }
-        : { sort: "NAME" }
+        : { sort: 'NAME' }
     )
   }
 
   sortByCreation = _ => {
     this.setState(oldState =>
-      oldState.sort === "CREATION"
+      oldState.sort === 'CREATION'
         ? { sortOrder: oldState.sortOrder * -1 }
-        : { sort: "CREATION" }
+        : { sort: 'CREATION' }
     )
   }
 
@@ -133,7 +134,7 @@ export default class RoomList extends Component {
     })
   }
 
-  getSortFunc() {
+  getSortFunc () {
     switch (this.state.sort) {
       case 'CREATION': return this.byCreation
       case 'ACTIVITY': return this.byActivity
@@ -161,15 +162,15 @@ export default class RoomList extends Component {
     // XXX ↓ very naive implementation, watch for speed
     return this.state.rooms.filter(room => {
       let flagged = true
-      if (searchFlags.includes("fav")) { flagged = flagged && !!room.tags["m.favourite"] }
+      if (searchFlags.includes('fav')) { flagged = flagged && !!room.tags['m.favourite'] }
       const tags = Object.keys(room.tags).filter(tag => tag.slice(0, 2) === 'u.')
       const state = room.getLiveTimeline().getState(Matrix.EventTimeline.FORWARDS)
       // TODO: could make the below smarter to search by displayname as well as userID.
-      const inRoom = state.getMembers().filter(u => u.membership === "join" || u.membership === "invite")
+      const inRoom = state.getMembers().filter(u => u.membership === 'join' || u.membership === 'invite')
       const roomMemberIds = inRoom.map(m => m.userId)
       const roomMemberNames = inRoom.map(m => m.name)
       const roomMembers = roomMemberIds.concat(roomMemberNames)
-      const parents = state.getStateEvents("m.space.parent")
+      const parents = state.getStateEvents('m.space.parent')
         .filter(e => !!e.getContent().via)
         .map(e => Client.client.getRoom(e.getStateKey())?.name)
         .filter(e => e)
@@ -187,7 +188,7 @@ export default class RoomList extends Component {
       .map(room => {
         const resource = new Resource(room)
         let result = null
-        if (room.getMyMembership() === "join" && resource.url) {
+        if (room.getMyMembership() === 'join' && resource.url) {
           result = <RoomEntry
             memberLimit={this.state.memberLimit}
             room={room}
@@ -197,7 +198,7 @@ export default class RoomList extends Component {
       }).filter(room => room !== null)
   }
 
-  render(props, state) {
+  render (props, state) {
     return <div id="room-list" ref={this.roomList}>
       <div id="select-sort">
         <button class="small-icon"
@@ -208,13 +209,13 @@ export default class RoomList extends Component {
             : Icons.sortAsc
           }
         </button>
-        <button data-current-button={state.sort === "ACTIVITY"}
+        <button data-current-button={state.sort === 'ACTIVITY'}
                 onClick={this.sortByActivity}
                 class="styled-button">Activity</button>
-        <button data-current-button={state.sort === "NAME"}
+        <button data-current-button={state.sort === 'NAME'}
                 onClick={this.sortByName}
                 class="styled-button">Name</button>
-        <button data-current-button={state.sort === "CREATION"}
+        <button data-current-button={state.sort === 'CREATION'}
                 onClick={this.sortByCreation}
                 class="styled-button">Creation</button>
       </div>
@@ -228,7 +229,7 @@ export default class RoomList extends Component {
 class FilterList extends Component {
   removeFilter = item => this.props.setFilterItems(this.props.filterItems.filter(x => x.value !== item.value))
 
-  render(props) {
+  render (props) {
     if (props.filterItems.length > 0) {
       return <div id="room-filters">
         Filters: {props.filterItems.map(item =>
@@ -242,7 +243,7 @@ class FilterList extends Component {
 class FilterListing extends Component {
   removeMe = _ => { this.props.removeFilter(this.props.filter) }
 
-  render(props) {
+  render (props) {
     return <span class="room-filter-listing" >
       <span class="room-filter-content">{props.filter.display}</span>
       <button onclick={this.removeMe}class="small-icon-badge">{Icons.close}</button>
@@ -251,7 +252,7 @@ class FilterListing extends Component {
 }
 
 class RoomEntry extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = { buttonsVisible: false }
   }
@@ -260,31 +261,32 @@ class RoomEntry extends Component {
 
   toggleButtons = _ => this.setState(oldState => { return { buttonsVisible: !oldState.buttonsVisible } })
 
-  openMembership = _ => Modal.set(<ManageMembership room={this.props.room} />, "Manage Membership", `for ${this.props.room.name}`)
+  openMembership = _ => Modal.set(<ManageMembership room={this.props.room} />, 'Manage Membership', `for ${this.props.room.name}`)
 
-  openSettings = _ => Modal.set(<RoomSettings joinLink={true} room={this.props.room} />, "Room Settings", `for ${this.props.room.name}`)
+  openSettings = _ => Modal.set(<RoomSettings joinLink={true} room={this.props.room} />, 'Room Settings', `for ${this.props.room.name}`)
 
-  handleEditTags = _ => Modal.set(<TagEditor room={this.props.room} />, "Edit Tags", `for ${this.props.room.name}`)
+  handleEditTags = _ => Modal.set(<TagEditor room={this.props.room} />, 'Edit Tags', `for ${this.props.room.name}`)
 
   toggleFavorite = _ => {
-    if (this.props.room.tags["m.favourite"]) Client.client.deleteRoomTag(this.props.room.roomId, "m.favourite")
-    else Client.client.setRoomTag(this.props.room.roomId, "m.favourite", {order: 0.5})
+    if (this.props.room.tags['m.favourite']) Client.client.deleteRoomTag(this.props.room.roomId, 'm.favourite')
+    else Client.client.setRoomTag(this.props.room.roomId, 'm.favourite', { order: 0.5 })
   }
 
-  handleClose = _ => Modal.set(<LeaveRoom room={this.props.room} />, "Leave Room?", `for ${this.props.room.name}`)
+  handleClose = _ => Modal.set(<LeaveRoom room={this.props.room} />, 'Leave Room?', `for ${this.props.room.name}`)
 
   render (props, state) {
     const userMember = props.room.getMember(Client.client.getUserId())
     const isAdmin = userMember.powerLevel >= 100
     const canInvite = props.room.getLiveTimeline()
       .getState(Matrix.EventTimeline.FORWARDS)
-      .hasSufficientPowerLevelFor("invite", userMember.powerLevel)
+      .hasSufficientPowerLevelFor('invite', userMember.powerLevel)
     const canonicalAlias = props.room.getCanonicalAlias()?.slice(1)
-    if (canonicalAlias) return <div style={this.roomColor.styleVariables} class="room-listing-entry" id={props.room.roomId}>
+    if (canonicalAlias) {
+      return <div style={this.roomColor.styleVariables} class="room-listing-entry" id={props.room.roomId}>
       <AvatarPanel room={props.room} />
       <div data-room-entry-buttons-visible={state.buttonsVisible} class="room-listing-body">
         <div class="room-listing-heading">
-          {props.room.tags["m.favourite"] ? <span class="fav-star"> {Icons.star} </span> : null}
+          {props.room.tags['m.favourite'] ? <span class="fav-star"> {Icons.star} </span> : null}
           <a href={`${window.location.origin}${window.location.pathname}#/${encodeURIComponent(canonicalAlias)}/`}>{props.room.name}</a>
         </div>
         <div class="room-listing-data">
@@ -302,41 +304,42 @@ class RoomEntry extends Component {
         </div>
       </div>
     </div>
+    }
   }
 }
 
 class AvatarPanel extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     const avatarEvent = props.room.getLiveTimeline()
       .getState(Matrix.EventTimeline.FORWARDS)
-      .getStateEvents("m.room.avatar", "")
+      .getStateEvents('m.room.avatar', '')
     this.state = {
       avatarEvent,
       loaded: false,
       avatarUrl: avatarEvent?.getContent()?.url
-        ? Client.client.getHttpUriForMxcFromHS(avatarEvent.getContent().url, 800, 600, "scale")
+        ? Client.client.getHttpUriForMxcFromHS(avatarEvent.getContent().url, 800, 600, 'scale')
         : null
     }
   }
 
   componentDidMount () {
-    Client.client.on("RoomState.events", this.handleStateUpdate)
+    Client.client.on('RoomState.events', this.handleStateUpdate)
     this.drawBlurhash()
   }
 
   componentWillUnmount () {
-    Client.client.off("RoomState.events", this.handleStateUpdate)
+    Client.client.off('RoomState.events', this.handleStateUpdate)
   }
 
   avatarCanvas = createRef()
 
   handleStateUpdate = e => {
-    if (e.getRoomId() === this.props.room.roomId && e.getType() === "m.room.avatar") {
+    if (e.getRoomId() === this.props.room.roomId && e.getType() === 'm.room.avatar') {
       this.setState({
         avatarEvent: e,
         avatarUrl: e.getContent().url
-          ? Client.client.getHttpUriForMxcFromHS(e.getContent().url, 800, 600, "scale")
+          ? Client.client.getHttpUriForMxcFromHS(e.getContent().url, 800, 600, 'scale')
           : null
       }, this.drawBlurhash)
     }
@@ -347,33 +350,33 @@ class AvatarPanel extends Component {
   drawBlurhash = _ => {
     const avatarInfo = this.state.avatarEvent?.getContent()?.info
     if (!avatarInfo?.h || !avatarInfo?.w || !avatarInfo?.blurhash) return
-    const ctx = this.avatarCanvas.current.getContext("2d")
+    const ctx = this.avatarCanvas.current.getContext('2d')
     ctx.clearRect(0, 0, this.avatarCanvas.current.wdith, this.avatarCanvas.current.height)
     // we draw them small and scale up in CSS, following blurhash developer's advice
     const width = 32
     const height = Math.floor(32 * (avatarInfo.h / avatarInfo.w))
     this.avatarCanvas.current.width = width
     this.avatarCanvas.current.height = height
-    const imageData = ctx.createImageData(width, height);
+    const imageData = ctx.createImageData(width, height)
     const pixels = decode(avatarInfo.blurhash, width, height)
-    imageData.data.set(pixels);
-    ctx.putImageData(imageData, 0, 0);
+    imageData.data.set(pixels)
+    ctx.putImageData(imageData, 0, 0)
   }
 
-  render(props, state) {
+  render (props, state) {
     const avatarInfo = state.avatarEvent?.getContent()?.info
     // using max/min here rather than setting the height directly so that the height doesn't affect the object-fit: cover of the image,
     // But so that the div is still the right size prior to image-load
     const avatarListingStyle = avatarInfo
-      ? { "min-height": Math.min(300, avatarInfo.h), "max-height": Math.min(300, avatarInfo.h) }
+      ? { 'min-height': Math.min(300, avatarInfo.h), 'max-height': Math.min(300, avatarInfo.h) }
       : null
     const avatarCanvasStyle = avatarInfo
-      ? { "min-height": Math.min(300, avatarInfo.h), "max-height": Math.min(300, avatarInfo.h), "width": "100%" }
+      ? { 'min-height': Math.min(300, avatarInfo.h), 'max-height': Math.min(300, avatarInfo.h), width: '100%' }
       : null
     return <div style={avatarListingStyle} data-has-avatar={!!state.avatarUrl} class="room-listing-avatar">
       {state.avatarUrl
         ? <Fragment>
-          <canvas 
+          <canvas
             ref={this.avatarCanvas}
             style={avatarCanvasStyle}
             class="room-listing-avatar-canvas" />
@@ -391,7 +394,7 @@ class AvatarPanel extends Component {
   }
 }
 
-function RoomTagListing(props) {
+function RoomTagListing (props) {
   const tagCount = Object.keys(props.room.tags).filter(tag => tag.slice(0, 2) === 'u.').length
   return tagCount > 0
     ? <div class="room-listing-data-row">
@@ -402,16 +405,16 @@ function RoomTagListing(props) {
 }
 
 class MemberListing extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = { open: false }
   }
 
-  toggleMemberList = _ => this.setState(oldState => { return { open: !oldState.open} })
+  toggleMemberList = _ => this.setState(oldState => { return { open: !oldState.open } })
 
-  render(props, state) {
-    const members = props.room.getMembersWithMembership("join")
-    const invites = props.room.getMembersWithMembership("invite")
+  render (props, state) {
+    const members = props.room.getMembersWithMembership('join')
+    const invites = props.room.getMembersWithMembership('invite')
     const memberPills = state.open
       ? members.map(member => <MemberPill key={member.userId} member={member} />)
       : members.slice(0, props.memberLimit).map(member => <MemberPill key={member.userId} member={member} />)
@@ -429,7 +432,7 @@ class MemberListing extends Component {
 }
 
 class AnnotationData extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       annotations: []
@@ -439,23 +442,23 @@ class AnnotationData extends Component {
     this.handleInitialSync = this.handleInitialSync.bind(this)
   }
 
-  componentDidMount() {
-    Client.client.on("RoomState.events", this.handleStateUpdate)
-    Client.client.on("Room.accountData", this.handleTimeline)
-    Client.client.on("Room.timeline", this.handleTimeline)
-    Client.client.on("sync.initial", this.handleInitialSync)
+  componentDidMount () {
+    Client.client.on('RoomState.events', this.handleStateUpdate)
+    Client.client.on('Room.accountData', this.handleTimeline)
+    Client.client.on('Room.timeline', this.handleTimeline)
+    Client.client.on('sync.initial', this.handleInitialSync)
     // We let the initialSyncHandler manage this if we're not syncing yet.
-    if (Client.client.getSyncState() !== "PREPARED") this.updateAnnotations()
+    if (Client.client.getSyncState() !== 'PREPARED') this.updateAnnotations()
   }
 
-  componentWillUnmount() {
-    Client.client.off("RoomState.events", this.handleStateUpdate)
-    Client.client.off("Room.accountData", this.handleTimeline)
-    Client.client.off("sync.initial", this.handleInitialSync)
-    Client.client.off("Room.timeline", this.handleTimeline)
+  componentWillUnmount () {
+    Client.client.off('RoomState.events', this.handleStateUpdate)
+    Client.client.off('Room.accountData', this.handleTimeline)
+    Client.client.off('sync.initial', this.handleInitialSync)
+    Client.client.off('Room.timeline', this.handleTimeline)
   }
 
-  handleInitialSync() {
+  handleInitialSync () {
     // Need this extra step, since I don't think account data update events are
     // fired by the initial sync
     this.updateAnnotations()
@@ -465,8 +468,8 @@ class AnnotationData extends Component {
     const annotations = this.props.room.getLiveTimeline()
       .getState(Matrix.EventTimeline.FORWARDS).getStateEvents(Matrix.EventType.SpaceChild)
       .map(ev => new Location(ev))
-      .filter(loc => loc.isValid() && loc.getStatus() === "open")
-    this.setState({annotations})
+      .filter(loc => loc.isValid() && loc.getStatus() === 'open')
+    this.setState({ annotations })
   }
 
   handleStateUpdate = e => {
@@ -482,15 +485,17 @@ class AnnotationData extends Component {
 
   handleLoadNew = _ => {
     const canonicalAlias = this.props.room.getCanonicalAlias()?.slice(1)
-    if (canonicalAlias) History.push(
+    if (canonicalAlias) {
+      History.push(
       `/${encodeURIComponent(canonicalAlias)}/`,
-      {searchString: "~unread"}
-    )
+      { searchString: '~unread' }
+      )
+    }
   }
 
   getUnreadCount = _ => this.state.annotations.filter(loc => loc.getUnread()).length
 
-  render() {
+  render () {
     const unread = this.getUnreadCount()
     return <div class="room-annotation-data">
       {unread < 1

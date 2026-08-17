@@ -1,4 +1,4 @@
-import { h, Component, createRef } from 'preact';
+import { h, Component, createRef } from 'preact'
 import * as Icons from './icons.js'
 import './styles/search.css'
 
@@ -15,7 +15,7 @@ export default class SearchBar extends Component {
 
   keydownHandler = e => {
     const searchPredicate = this.props.searchPredicate ||
-      (e => e.key === "/" && !e.altKey && !e.ctrlKey)
+      (e => e.key === '/' && !e.altKey && !e.ctrlKey)
     if (searchPredicate(e)) {
       e.preventDefault()
       this.searchInput.current.focus()
@@ -24,7 +24,7 @@ export default class SearchBar extends Component {
 
   handleClear = e => {
     e.preventDefault()
-    this.props.setSearch("")
+    this.props.setSearch('')
     this.searchInput.current.focus()
   }
 
@@ -40,13 +40,13 @@ export default class SearchBar extends Component {
 
   handleInputKeydown = e => {
     if (!e.altKey && !e.ctrlKey) e.stopPropagation() // don't propagate to global keypress handlers
-    if (e.key === "Esc" || e.key === "Escape") this.searchInput.current.blur()
-    if (e.key === "Enter" && this.props.submit ) this.props.submit(this.props.search)
+    if (e.key === 'Esc' || e.key === 'Escape') this.searchInput.current.blur()
+    if (e.key === 'Enter' && this.props.submit) this.props.submit(this.props.search)
   }
 
   handleInput = e => this.props.setSearch(e.target.value)
 
-  render(props, _) {
+  render (props, _) {
     return <div title={props.title} class="search-bar">
       <input ref={this.searchInput}
         value={props.search}
@@ -54,10 +54,10 @@ export default class SearchBar extends Component {
         onInput={this.handleInput}
         onBlur={this.handleInputBlur}
         onFocus={this.handleInputFocus} />
-      <div class={"search-icon"}>{Icons.search }</div>
+      <div class={'search-icon'}>{Icons.search }</div>
       <div onmousedown={this.handleClear}
-        title={props.search ? "Clear current search" : null}
-        class={"right-decoration"}>
+        title={props.search ? 'Clear current search' : null}
+        class={'right-decoration'}>
         {props.search
           ? Icons.close
           : props.hint ? <span class="search-hint">{props.hint}</span> : null

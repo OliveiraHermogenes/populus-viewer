@@ -1,9 +1,9 @@
-import { h, Fragment, createRef, Component } from 'preact';
-import * as Matrix from "matrix-js-sdk"
+import { h, Fragment, createRef, Component } from 'preact'
+import * as Matrix from 'matrix-js-sdk'
 import Client from './client.js'
 import './styles/spacesManager.css'
 import Modal from './modal.js'
-import { toastError } from "./utils/alerts.js"
+import { toastError } from './utils/alerts.js'
 import ManageMembership from './manageMembership.js'
 import Resource from './utils/resource.js'
 import RoomSettings from './roomSettings.js'
@@ -11,20 +11,19 @@ import SearchBar from './search.js'
 import LeaveRoom from './leaveRoom.js'
 import ArchiveRoom from './archiveRoom.js'
 import AddCollection from './addCollection.js'
-import RoomIcon from './roomIcon.js'
 import ToolTip from './utils/tooltip.js'
-import { RoomIconPlaceholder } from './roomIcon.js'
+import { default as RoomIcon, RoomIconPlaceholder } from './roomIcon.js'
 import * as Icons from './icons.js'
 import { RoomColor } from './utils/colors.js'
-import { populusCollectionChild } from "./constants.js"
+import { populusCollectionChild } from './constants.js'
 
 export default class SpacesManager extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     SpacesManager.init()
     this.state = {
       spaces: Client.client.getVisibleRooms()
-        .filter(room => room.getMyMembership() === "join")
+        .filter(room => room.getMyMembership() === 'join')
         .filter(this.isActiveCollection)
     }
   }
@@ -34,17 +33,17 @@ export default class SpacesManager extends Component {
     this.roomDebounceTimeout = setTimeout(_ => {
       this.setState({
         spaces: Client.client.getVisibleRooms()
-          .filter(room => room.getMyMembership() === "join")
+          .filter(room => room.getMyMembership() === 'join')
           .filter(this.isActiveCollection)
       })
     })
   }
 
-  static init() {
+  static init () {
     if (SpacesManager.initialized) return
     SpacesManager.initialized = true
     SpacesManager.spaces = {}
-    Client.client.on("RoomState.events", e => {
+    Client.client.on('RoomState.events', e => {
       if (SpacesManager.spaces[e.getRoomId()] && e.getType() === Matrix.EventType.SpaceChild) {
         if (e.getContent().via) {
           const responsePromise = Client.client.getRoomHierarchy(e.getStateKey(), 1, 0)
@@ -52,25 +51,25 @@ export default class SpacesManager extends Component {
             const [child] = response.rooms
             SpacesManager.spaces[e.getRoomId()].children[child.room_id] = child
             SpacesManager.spaces[e.getRoomId()].via[e.getStateKey()] = e.getContent().via
-          }).then(_ => Client.client.emit("Space.update", e.getRoomId()))
+          }).then(_ => Client.client.emit('Space.update', e.getRoomId()))
         } else {
           delete SpacesManager.spaces[e.getRoomId()].children[e.getStateKey()]
-          Client.client.emit("Space.update", e.getRoomId())
+          Client.client.emit('Space.update', e.getRoomId())
         }
       }
     })
   }
 
   componentDidMount () {
-    Client.client.on("Room", this.handleRoom)
-    Client.client.on("Room.name", this.handleRoom)
-    Client.client.on("Room.accountData", this.handleRoom)
+    Client.client.on('Room', this.handleRoom)
+    Client.client.on('Room.name', this.handleRoom)
+    Client.client.on('Room.accountData', this.handleRoom)
   }
 
   componentWillUnmount () {
-    Client.client.off("Room", this.handleRoom)
-    Client.client.off("Room.name", this.handleRoom)
-    Client.client.off("Room.accountData", this.handleRoom)
+    Client.client.off('Room', this.handleRoom)
+    Client.client.off('Room.name', this.handleRoom)
+    Client.client.off('Room.accountData', this.handleRoom)
   }
 
   filterToggle = s => {
@@ -82,19 +81,19 @@ export default class SpacesManager extends Component {
       : null
   }
 
-  isActiveCollection(room) {
+  isActiveCollection (room) {
     const roomState = room.getLiveTimeline().getState(Matrix.EventTimeline.FORWARDS)
-    const creation = roomState.getStateEvents("m.room.create", "")
-    const isSpace = creation?.getContent()?.type === "m.space"
-    const isActive = !room.tags["m.lowpriority"]
+    const creation = roomState.getStateEvents('m.room.create', '')
+    const isSpace = creation?.getContent()?.type === 'm.space'
+    const isActive = !room.tags['m.lowpriority']
     return isSpace && isActive && !Resource.hasResource(room)
   }
 
   addCollection = _ => {
-    Modal.set(<AddCollection />, "Add New Collection")
+    Modal.set(<AddCollection />, 'Add New Collection')
   }
 
-  render(props, state) {
+  render (props, state) {
     return <div id="spaces-manager">
       <h1>Collections</h1>
       <hr class="styled-rule" />
@@ -109,7 +108,7 @@ export default class SpacesManager extends Component {
 }
 
 class SpaceListing extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     if (!SpacesManager.spaces[this.props.room.roomId]) {
       SpacesManager.spaces[this.props.room.roomId] = {
@@ -118,9 +117,9 @@ class SpaceListing extends Component {
         nextBatch: null
       }
     }
-    this.initialChildCount = props.room.getLiveTimeline() 
+    this.initialChildCount = props.room.getLiveTimeline()
       .getState(Matrix.EventTimeline.FORWARDS)
-      .getStateEvents("m.space.child")
+      .getStateEvents('m.space.child')
       .filter(childEvent => childEvent.getContent()?.via)
       .length
 
@@ -133,13 +132,13 @@ class SpaceListing extends Component {
     }
   }
 
-  componentDidMount() {
-    Client.client.on("Space.update", this.handleSpaceUpdate)
+  componentDidMount () {
+    Client.client.on('Space.update', this.handleSpaceUpdate)
     if (this.state.limit > Object.keys(this.state.children).length) this.loadChildren()
   }
 
-  componentWillUnmount() {
-    Client.client.off("Space.update", this.handleSpaceUpdate)
+  componentWillUnmount () {
+    Client.client.off('Space.update', this.handleSpaceUpdate)
   }
 
   handleSpaceUpdate = roomId => {
@@ -175,16 +174,16 @@ class SpaceListing extends Component {
   addChildren = _ => {
     const limit = this.state.limit + 15
     if (limit > Object.keys(this.state.children).length) this.pageChildren()
-    this.setState({limit})
+    this.setState({ limit })
   }
 
-  refreshModal = _ => Modal.getTitle() === "Manage Discussions"
+  refreshModal = _ => Modal.getTitle() === 'Manage Discussions'
     ? Modal.set(<AddChild
         children={Object.values(this.state.children)}
         nextBatch={this.state.nextBatch}
         pageChildren={this.pageChildren}
         room={this.props.room}
-      />, "Manage Discussions", `to ${this.props.room.name}`)
+      />, 'Manage Discussions', `to ${this.props.room.name}`)
     : null
 
   searchMe = _ => this.props.filterToggle({
@@ -202,7 +201,7 @@ class SpaceListing extends Component {
       nextBatch={this.state.nextBatch}
       pageChildren={this.pageChildren}
       room={this.props.room}
-      />, "Manage Discussions", `in ${this.props.room.name}`)
+      />, 'Manage Discussions', `in ${this.props.room.name}`)
   }
 
   joinChild = roomId => Client.client.joinRoom(roomId, { viaServers: this.state.via[roomId] })
@@ -215,26 +214,26 @@ class SpaceListing extends Component {
 
   openSettings = _ => {
     this.setState({ actionsVisible: false })
-    Modal.set(<RoomSettings joinLink={true} room={this.props.room} />, "Room Settings", `for ${this.props.room.name}`)
+    Modal.set(<RoomSettings joinLink={true} room={this.props.room} />, 'Room Settings', `for ${this.props.room.name}`)
   }
 
   openMembership = _ => {
     this.setState({ actionsVisible: false })
-    Modal.set(<ManageMembership room={this.props.room} />, "Manage Membership", `for ${this.props.room.name}`)
+    Modal.set(<ManageMembership room={this.props.room} />, 'Manage Membership', `for ${this.props.room.name}`)
   }
 
-  handleClose = _ => Modal.set(<LeaveRoom room={this.props.room} />, "Leave Room?", `for ${this.props.room.name}`)
+  handleClose = _ => Modal.set(<LeaveRoom room={this.props.room} />, 'Leave Room?', `for ${this.props.room.name}`)
 
-  archiveRoom = _ => Modal.set(<ArchiveRoom room={this.props.room} />, "Archive Collection?", `for ${this.props.room.name}`)
+  archiveRoom = _ => Modal.set(<ArchiveRoom room={this.props.room} />, 'Archive Collection?', `for ${this.props.room.name}`)
 
   roomColor = new RoomColor(this.props.room.name)
 
-  render(props, state) {
+  render (props, state) {
     const userMember = props.room.getMember(Client.client.getUserId())
     const isAdmin = userMember.powerLevel >= 100
     const canInvite = props.room.getLiveTimeline()
       .getState(Matrix.EventTimeline.FORWARDS)
-      .hasSufficientPowerLevelFor("invite", userMember.powerLevel)
+      .hasSufficientPowerLevelFor('invite', userMember.powerLevel)
     // should do this in a more fine-grained way with hasSufficientPowerLevelFor
     return <div style={this.roomColor.styleVariables} class="space-listing">
       <h3>
@@ -243,23 +242,23 @@ class SpaceListing extends Component {
       </h3>
       { state.actionsVisible
         ? <div class="space-listing-actions">
-          {isAdmin 
+          {isAdmin
             ? <ToolTip content="Add new discussion">
-              <button class="small-icon" onclick={this.addChild}>{ Icons.newDiscussion }</button> 
+              <button class="small-icon" onclick={this.addChild}>{ Icons.newDiscussion }</button>
             </ToolTip>
             : null
           }
-          {canInvite 
+          {canInvite
             ? <ToolTip content="Manage membership">
-              <button class="small-icon" onclick={this.openMembership}>{ Icons.userPlus }</button> 
+              <button class="small-icon" onclick={this.openMembership}>{ Icons.userPlus }</button>
             </ToolTip>
             : null
           }
-          {isAdmin 
-              ? <ToolTip content="Configure settings">
-                <button class="small-icon" onclick={this.openSettings}>{ Icons.settings }</button> 
+          {isAdmin
+            ? <ToolTip content="Configure settings">
+                <button class="small-icon" onclick={this.openSettings}>{ Icons.settings }</button>
               </ToolTip>
-              : null
+            : null
           }
           <ToolTip content="Hide and archive">
             <button class="small-icon" onclick={this.archiveRoom}>{ Icons.archive }</button>
@@ -272,8 +271,8 @@ class SpaceListing extends Component {
       }
       <div class="space-listing-children">
       {Object.values(state.children).length > 0
-          // the root is always first in the listing
-          ? Object.values(state.children).slice(0, state.limit).map(child => <RoomIcon
+      // the root is always first in the listing
+        ? Object.values(state.children).slice(0, state.limit).map(child => <RoomIcon
               key={child.room_id}
               size={50}
               inactiveClick={this.joinChild}
@@ -283,9 +282,9 @@ class SpaceListing extends Component {
               numJoinedMembers={child.num_joined_members}
               joinRule={child.join_rule}
               topic={child.topic}
-              name={child.name || child?.canonical_alias?.slice(1) || "?"}
+              name={child.name || child?.canonical_alias?.slice(1) || '?'}
             />)
-          : Array(Math.min(state.limit, this.initialChildCount)).fill().map((_, idx) => <RoomIconPlaceholder
+        : Array(Math.min(state.limit, this.initialChildCount)).fill().map((_, idx) => <RoomIconPlaceholder
               key={idx}
               size={50}
             />)
@@ -300,11 +299,11 @@ class SpaceListing extends Component {
 }
 
 class AddChild extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     props.children.map(child => child.name)
     this.state = {
-      search: "",
+      search: '',
       adding: true,
       discussions: Client.client
         .getVisibleRooms()
@@ -336,9 +335,9 @@ class AddChild extends Component {
 
   updateHeight = _ => this.currentListWrapper.current.style.height = `${this.currentList.current.scrollHeight}px`
 
-  addDiscussions = _ => this.setState({adding: true})
+  addDiscussions = _ => this.setState({ adding: true })
 
-  removeDiscussions = _ => this.setState({adding: false})
+  removeDiscussions = _ => this.setState({ adding: false })
 
   filterDiscussions = search => {
     this.setState({
@@ -352,7 +351,7 @@ class AddChild extends Component {
     })
   }
 
-  render(props, state) {
+  render (props, state) {
     const childIds = this.props.children.map(child => child.room_id)
     const availableDiscussions = state.adding && state.discussions.filter(room => !childIds.includes(room.roomId))
     const currentDiscussions = !state.adding && props.children.filter(child => child.name.toLowerCase().includes(state.search.toLowerCase()))
@@ -378,7 +377,7 @@ class AddChild extends Component {
 
 class CurrentDiscussionListing extends Component {
   removeMe = async _ => {
-    this.setState({pending: true})
+    this.setState({ pending: true })
     await Client.client
       .sendStateEvent(this.props.collection.roomId, Matrix.EventType.SpaceChild, {}, this.props.child.room_id)
       .catch(toastError("Couldn't remove discussion from collection"))
@@ -387,7 +386,7 @@ class CurrentDiscussionListing extends Component {
       .catch(toastError("Couldn't remove collection as parent of discussion"))
   }
 
-  render(props, state) {
+  render (props, state) {
     return <button
       data-change-pending={state.pending}
       class="discussion-listing"
@@ -400,7 +399,7 @@ class CurrentDiscussionListing extends Component {
 
 class AvailableDiscussionListing extends Component {
   addMe = async _ => {
-    this.setState({pending: true})
+    this.setState({ pending: true })
     const theDomain = Client.client.getDomain()
     const childContent = {
       via: [theDomain],
@@ -415,7 +414,7 @@ class AvailableDiscussionListing extends Component {
       .catch(toastError("Couldn't add collection as parent of discussion"))
   }
 
-  render(props, state) {
+  render (props, state) {
     return <button
       aria-label={`add ${props.room.name} to discussion`}
       data-change-pending={state.pending}

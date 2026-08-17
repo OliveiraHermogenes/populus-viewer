@@ -1,6 +1,6 @@
-import * as Layout from "./layout.js"
+import * as Layout from './layout.js'
 
-export function textFromPdfSelection(sel) {
+export function textFromPdfSelection (sel) {
   const theRange = sel.getRangeAt(0)
   const theContents = Array.from(theRange.cloneContents().childNodes)
   return theContents.map(child =>
@@ -8,11 +8,11 @@ export function textFromPdfSelection(sel) {
       ? child.data
       : child.nodeType === 1 // Element Node
         ? child.innerText
-        : "" ).join(' ').replace(/(.)-\s+/g, "$1") // join nodes with spaces, clean any linebreak dashes
+        : '').join(' ').replace(/(.)-\s+/g, '$1') // join nodes with spaces, clean any linebreak dashes
 }
 
 // get rects in CSS pixel coordinatates relative to the given elt, correcting for a css zoom originating at 0,0
-export function rectsFromPdfSelection(sel, elt, zoom) {
+export function rectsFromPdfSelection (sel, elt, zoom) {
   const theRange = sel.getRangeAt(0)
   let rects = []
   if (theRange.startContainer !== theRange.endContainer) {
@@ -52,7 +52,7 @@ export function rectsFromPdfSelection(sel, elt, zoom) {
 // use a trampoline here to prevent stack overflow someday.
 //
 // cf https://stackoverflow.com/questions/54719548/tail-call-optimization-implementation-in-javascript-engines
-function findNextInDOM(node, predicate, ascending) {
+function findNextInDOM (node, predicate, ascending) {
   if (ascending) {
     if (node.nextSibling) return findNextInDOM(node.nextSibling, predicate)
     if (node.parentNode) return findNextInDOM(node.parentNode, predicate, true)
@@ -66,7 +66,7 @@ function findNextInDOM(node, predicate, ascending) {
 }
 
 // gather the text nodes below a given node, inclusive
-function gatherTextNodesBelow(top) {
+function gatherTextNodesBelow (top) {
   const nodes = []
   const predicate = node => node.nodeType === 3 || node === top
   let focus = findNextInDOM(top, predicate)
@@ -79,7 +79,7 @@ function gatherTextNodesBelow(top) {
 }
 
 // gather the text nodes in between start and end (excluding both start and end)
-function gatherTextNodesBetween(start, end) {
+function gatherTextNodesBetween (start, end) {
   const nodes = []
   const predicate = node => node.nodeType === 3 || node === end
   let focus = start
@@ -89,10 +89,10 @@ function gatherTextNodesBetween(start, end) {
   return nodes
 }
 
-function textNodeToRect(textNode, start, end) {
-  const range = document.createRange();
-  range.selectNode(textNode);
+function textNodeToRect (textNode, start, end) {
+  const range = document.createRange()
+  range.selectNode(textNode)
   if (start) range.setStart(textNode, start)
   if (end) range.setEnd(textNode, end)
-  return range.getBoundingClientRect();
+  return range.getBoundingClientRect()
 }

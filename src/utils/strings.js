@@ -1,4 +1,4 @@
-export function toWords(s) {
+export function toWords (s) {
   const words = []
   const regex = /[^\s"]+|"([^"]*)"/gi
   let match

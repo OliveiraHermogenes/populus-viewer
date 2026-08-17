@@ -1,18 +1,17 @@
-import { h, createRef, Fragment, Component } from 'preact';
+import { h, createRef, Fragment, Component } from 'preact'
 import Resource from './utils/resource.js'
 import Location from './utils/location.js'
 import Client from './client.js'
-import * as Matrix from "matrix-js-sdk"
-import { onlineOrAlert } from "./utils/alerts.js"
+import * as Matrix from 'matrix-js-sdk'
+import { onlineOrAlert } from './utils/alerts.js'
 import './styles/imageContent.css'
-import { mscLocation, mscMediaFragment, populusHighlight } from "./constants.js"
+import { mscLocation, mscMediaFragment, populusHighlight } from './constants.js'
 
 export default class ImageContent extends Component {
-
   static ImageStore = {}
 
-  componentDidMount() { 
-    this.fetchImage() 
+  componentDidMount () {
+    this.fetchImage()
   }
 
   async fetchImage () {
@@ -34,7 +33,7 @@ export default class ImageContent extends Component {
           return URL.createObjectURL(blob)
         })
         .catch(this.catchFetchImageError)
-    } else { console.log(`found file for ${this.props.room.name} in store` ) }
+    } else { console.log(`found file for ${this.props.room.name} in store`) }
     ImageContent.ImageStore[theImage.url].then(url => this.props.resource.resolveFetch(url))
     ImageContent.ImageStore[theImage.url].then(this.drawImage)
     // TODO: this throws an error when the user exits the page before the media
@@ -48,11 +47,11 @@ export default class ImageContent extends Component {
       this.props.setContentDimensions(theImage.height, theImage.width)
       const widthRatio = this.props.contentContainer.current.offsetWidth / theImage.width
       if (widthRatio < 1) this.props.setZoom(_ => widthRatio)
-      this.setState({imageUrl})
+      this.setState({ imageUrl })
     }
   }
 
-  hasSelection() { return !!this.state.selection }
+  hasSelection () { return !!this.state.selection }
 
   createSelection = e => {
     if (this.longPressTimeout) return
@@ -63,14 +62,14 @@ export default class ImageContent extends Component {
     this.longPressTimeout = setTimeout(_ => {
       this.setState({
         selection: new ImageAnnotation({
-          x: Math.round(initialOffsetX), 
-          y: Math.round(initialOffsetY), 
-          h:100, 
-          w:100,
+          x: Math.round(initialOffsetX),
+          y: Math.round(initialOffsetY),
+          h: 100,
+          w: 100,
           imageWidth: this.props.contentWidthPx,
           imageHeight: this.props.contentHeightPx,
         })
-      }, _ => document.dispatchEvent(new Event("selectionchange")))
+      }, _ => document.dispatchEvent(new Event('selectionchange')))
     }, 500)
   }
 
@@ -82,7 +81,7 @@ export default class ImageContent extends Component {
   clearSelection = _ => {
     this.setState({
       selection: null
-    }, _ => document.dispatchEvent(new Event("selectionchange")))
+    }, _ => document.dispatchEvent(new Event('selectionchange')))
     // XXX If the clear is the result of a two-finger zoom gesture, this
     // prevents the second finger from triggering a new selection
     this.longPressTimeout = setTimeout(_ => { })
@@ -91,24 +90,24 @@ export default class ImageContent extends Component {
   generateLocation = _ => {
     return {
       [mscMediaFragment]: {
-          x: this.state.selection.x,
-          y: this.state.selection.y,
-          w: this.state.selection.w,
-          h: this.state.selection.h
+        x: this.state.selection.x,
+        y: this.state.selection.y,
+        w: this.state.selection.w,
+        h: this.state.selection.h
       },
       [populusHighlight]: {
-        activityStatus: "pending",
+        activityStatus: 'pending',
         creator: Client.client.getUserId()
       }
     }
   }
 
-  get zoomMin () { 
+  get zoomMin () {
     if (!this.props.contentWidthPx) return 0
     return Math.min(
-      1, 
-      this.props.contentContainer.current.offsetWidth / this.props.contentWidthPx, 
-      this.props.contentContainer.current.offsetHeight / this.props.contentHeightPx 
+      1,
+      this.props.contentContainer.current.offsetWidth / this.props.contentWidthPx,
+      this.props.contentContainer.current.offsetHeight / this.props.contentHeightPx
     )
   }
 
@@ -118,10 +117,10 @@ export default class ImageContent extends Component {
     if (!onlineOrAlert()) return
     const theDomain = Client.client.getDomain()
     const theRoomState = this.props.room.getLiveTimeline().getState(Matrix.EventTimeline.FORWARDS)
-    const theLevels = theRoomState.getStateEvents(Matrix.EventType.RoomPowerLevels, "")
+    const theLevels = theRoomState.getStateEvents(Matrix.EventType.RoomPowerLevels, '')
     const locationData = this.generateLocation()
     return Client.client.createRoom({
-      visibility: "private",
+      visibility: 'private',
       name: `selected region at ${this.state.selection.x},${this.state.selection.y}`,
       power_level_content_override: {
         users: Object.assign({}, theLevels.getContent().users, {
@@ -130,8 +129,8 @@ export default class ImageContent extends Component {
       },
       initial_state: [{
         type: Matrix.EventType.RoomJoinRules,
-        state_key: "",
-        content: {join_rule: "public"}
+        state_key: '',
+        content: { join_rule: 'public' }
       },
       {
         type: Matrix.EventType.SpaceParent, // we indicate that the current room is the parent
@@ -158,7 +157,7 @@ export default class ImageContent extends Component {
     })
   }
 
-  getAnnotations() {
+  getAnnotations () {
     return this.props.filteredAnnotationContents.map(loc => {
       return new ImageAnnotation({
         location: loc,
@@ -171,21 +170,21 @@ export default class ImageContent extends Component {
     })
   }
 
-  render(props, state) {
+  render (props, state) {
     if (!props.contentWidthPx) return
     return <div id="image-view-wrapper">
-      <div 
+      <div
         data-image-selecting={!!state.selection}
         id="image-view" >
         <img src={state.imageUrl} />
-        <ImageOverlay 
+        <ImageOverlay
           focus={props.focus}
           handlePointerCancel={this.handlePointerCancel}
           handlePointerDown={state.selection ? this.clearSelection : this.createSelection}
           contentWidthPx={props.contentWidthPx}
           contentHeightPx={props.contentHeightPx}
-        >{this.state.selection 
-          ? this.state.selection 
+        >{this.state.selection
+          ? this.state.selection
           : this.getAnnotations()
         }
         </ImageOverlay>
@@ -197,7 +196,7 @@ export default class ImageContent extends Component {
 // XXX We don't use a component here since this should control two different
 // <rect>s that need to appear in different places
 class ImageAnnotation {
-  constructor({x,y,h,w, location, focused, setFocus, imageHeight, imageWidth}) {
+  constructor ({ x, y, h, w, location, focused, setFocus, imageHeight, imageWidth }) {
     const rect = location?.getMediaRect()
     this.x = rect?.x || x
     this.y = rect?.y || y
@@ -217,7 +216,7 @@ class ImageAnnotation {
   }
 
   focusAnnotation = e => {
-    e.stopPropagation() //prevent a secondary seek
+    e.stopPropagation() // prevent a secondary seek
     this.setFocus(this.location)
   }
 
@@ -246,26 +245,26 @@ class ImageAnnotation {
   handleDrag = e => {
     e.preventDefault()
     if (e.pointerId !== this.initialPointer) return
-    this.x = Math.round(Math.min(Math.max(0, this.initialX + (e.offsetX- this.initialOffsetX )), this.imageWidth - this.w))
-    this.y = Math.round(Math.min(Math.max(0, this.initialY + (e.offsetY  - this.initialOffsetY)), this.imageHeight - this.h))
+    this.x = Math.round(Math.min(Math.max(0, this.initialX + (e.offsetX - this.initialOffsetX)), this.imageWidth - this.w))
+    this.y = Math.round(Math.min(Math.max(0, this.initialY + (e.offsetY - this.initialOffsetY)), this.imageHeight - this.h))
     requestAnimationFrame(this.updateSizes)
   }
 
   updateSizes = _ => {
-    this.rectRef.current.setAttribute("x", this.x)
-    this.rectRef.current.setAttribute("y", this.y)
-    this.rectRef.current.setAttribute("width", this.w - 20)
-    this.rectRef.current.setAttribute("height", this.h - 20)
-    this.maskRef.current.setAttribute("x", this.x)
-    this.maskRef.current.setAttribute("y", this.y)
-    this.maskRef.current.setAttribute("width", this.w)
-    this.maskRef.current.setAttribute("height", this.h)
-    this.rectResizeWRef.current.setAttribute("y", this.y)
-    this.rectResizeWRef.current.setAttribute("x", this.x + this.w - 20)
-    this.rectResizeWRef.current.setAttribute("height", this.h - 20)
-    this.rectResizeHRef.current.setAttribute("x", this.x)
-    this.rectResizeHRef.current.setAttribute("width", this.w)
-    this.rectResizeHRef.current.setAttribute("y", this.y + this.h - 20)
+    this.rectRef.current.setAttribute('x', this.x)
+    this.rectRef.current.setAttribute('y', this.y)
+    this.rectRef.current.setAttribute('width', this.w - 20)
+    this.rectRef.current.setAttribute('height', this.h - 20)
+    this.maskRef.current.setAttribute('x', this.x)
+    this.maskRef.current.setAttribute('y', this.y)
+    this.maskRef.current.setAttribute('width', this.w)
+    this.maskRef.current.setAttribute('height', this.h)
+    this.rectResizeWRef.current.setAttribute('y', this.y)
+    this.rectResizeWRef.current.setAttribute('x', this.x + this.w - 20)
+    this.rectResizeWRef.current.setAttribute('height', this.h - 20)
+    this.rectResizeHRef.current.setAttribute('x', this.x)
+    this.rectResizeHRef.current.setAttribute('width', this.w)
+    this.rectResizeHRef.current.setAttribute('y', this.y + this.h - 20)
   }
 
   startResizeW = e => {
@@ -307,7 +306,7 @@ class ImageAnnotation {
   handleResizeW = e => {
     e.preventDefault()
     if (e.pointerId !== this.initialPointer) return
-    //the 40px minimum here accomodates the handles
+    // the 40px minimum here accomodates the handles
     this.w = Math.round(Math.min(this.imageWidth - this.x, Math.max(40, this.initialWidth + (e.offsetX - this.initialOffsetX))))
     this.updateSizes()
   }
@@ -315,23 +314,22 @@ class ImageAnnotation {
   handleResizeH = e => {
     e.preventDefault()
     if (e.pointerId !== this.initialPointer) return
-    //the 40px minimum here accomodates the handles
+    // the 40px minimum here accomodates the handles
     this.h = Math.round(Math.min(this.imageHeight - this.y, Math.max(40, this.initialHeight + (e.offsetY - this.initialOffsetY))))
     this.updateSizes()
   }
 }
 
 class ImageOverlay extends Component {
-
   getMasks = _ => this.props.children?.map(this.toMask)
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate (prevProps) {
     if (prevProps.focus?.getChild() !== this.props.focus?.getChild()) {
-      this.focusedRect?.current?.scrollIntoView({block:"center", inline:"center"})
+      this.focusedRect?.current?.scrollIntoView({ block: 'center', inline: 'center' })
     }
   }
 
-  toMask = child => <rect 
+  toMask = child => <rect
       key={child.key}
       ref={child.maskRef}
       x={child.x}
@@ -350,8 +348,8 @@ class ImageOverlay extends Component {
       mask="url(#mask)"
       onpointerdown={child.focusAnnotation}
       class="image-annotation-rect"
-      x={child.x} 
-      y={child.y} 
+      x={child.x}
+      y={child.y}
       width={child.w}
       height={child.h}
       data-annotation-focused={child.focused}
@@ -364,8 +362,8 @@ class ImageOverlay extends Component {
       ref={child.rectRef}
       mask="url(#mask)"
       class="image-annotation-rect-drag"
-      x={child.x} 
-      y={child.y} 
+      x={child.x}
+      y={child.y}
       onpointerdown={child.startDrag}
       width={child.w - 20}
       height={child.h - 20}
@@ -375,7 +373,7 @@ class ImageOverlay extends Component {
       ref={child.rectResizeWRef}
       mask="url(#mask)"
       class="image-annotation-rect-resize-w"
-      x={child.x + child.w - 20} 
+      x={child.x + child.w - 20}
       y={child.y}
       onpointerdown={child.startResizeW}
       width={20}
@@ -386,7 +384,7 @@ class ImageOverlay extends Component {
       ref={child.rectResizeHRef}
       mask="url(#mask)"
       class="image-annotation-rect-resize-h"
-      x={child.x} 
+      x={child.x}
       y={child.y + child.h - 20}
       onpointerdown={child.startResizeH}
       width={child.w}
@@ -394,12 +392,12 @@ class ImageOverlay extends Component {
     />
   </Fragment>
 
-  render (props, state) {
+  render (props) {
     const outerPath = `M0 0 h${props.contentWidthPx} v${props.contentHeightPx} h-${props.contentWidthPx}z`
-    return <svg 
+    return <svg
       onPointerCancel={props.handlePointerCancel}
       onPointerUp={props.handlePointerCancel}
-      onPointerDown={props.handlePointerDown} 
+      onPointerDown={props.handlePointerDown}
       id="image-overlay">
       <defs>
         <mask id="mask">

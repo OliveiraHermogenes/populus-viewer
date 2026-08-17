@@ -24,17 +24,17 @@ export function generateFallbackPlain (event) {
   let lines
   const targetSender = event.getSender()
   switch (event.getContent().msgtype) {
-    case "m.file": {
-      lines = ["sent a file"]
-      break;
+    case 'm.file': {
+      lines = ['sent a file']
+      break
     }
-    case "m.audio": {
-      lines = ["sent an audio file"]
-      break;
+    case 'm.audio': {
+      lines = ['sent an audio file']
+      break
     }
-    case "m.video": {
-      lines = ["sent a video"]
-      break;
+    case 'm.video': {
+      lines = ['sent a video']
+      break
     }
     default: {
       const targetBody = event.getContent().body
@@ -51,17 +51,17 @@ export function generateFallbackHtml (event) {
   let replyHtml
   const targetSender = event.getSender()
   switch (event.getContent().msgtype) {
-    case "m.file": {
-      replyHtml = "sent a file"
-      break;
+    case 'm.file': {
+      replyHtml = 'sent a file'
+      break
     }
-    case "m.audio": {
-      replyHtml = "sent an audio file"
-      break;
+    case 'm.audio': {
+      replyHtml = 'sent an audio file'
+      break
     }
-    case "m.video": {
-      replyHtml = "sent a video"
-      break;
+    case 'm.video': {
+      replyHtml = 'sent a video'
+      break
     }
     default: {
       const targetHTML = event.getContent().formatted_body || event.getContent().body.replace(/\n/g, '<br>')
@@ -90,7 +90,7 @@ export function getFallbackPlain (content) {
   return getReplyPrefixPlain(content)
 }
 
-export function getReplyPrefixHtml(content) {
+export function getReplyPrefixHtml (content) {
   const html = content.formatted_body
   if (!html) return ''
   const rootNode = new DOMParser().parseFromString(html, 'text/html').body

@@ -1,5 +1,5 @@
-import { h, Fragment, createRef, Component } from 'preact';
-import * as Matrix from "matrix-js-sdk"
+import { h, Fragment, createRef, Component } from 'preact'
+import * as Matrix from 'matrix-js-sdk'
 import { UserColor } from './utils/colors.js'
 import FileUpload from './fileUpload.js'
 import RoomList from './roomList.js'
@@ -7,53 +7,53 @@ import SpacesManager from './spacesManager.js'
 import Client from './client.js'
 import SearchBar from './search.js'
 import { toWords } from './utils/strings.js'
-import ToolTip from "./utils/tooltip.js"
+import ToolTip from './utils/tooltip.js'
 import * as PopupMenu from './popUpMenu.js'
 import ProfileInformation from './profileInformation.js'
 import NotificationListing from './notifications.js'
 import * as Icons from './icons.js'
 import SyncIndicator from './syncIndicator.js'
-import { mscResourceData } from "./constants.js"
+import { mscResourceData } from './constants.js'
 import './styles/welcome.css'
 
 export default class WelcomeView extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       view: null,
       inputFocus: false,
-      searchFilter: "",
+      searchFilter: '',
       filterItems: [],
       layout: document.body.offsetWidth > 750
-        ? "wide"
+        ? 'wide'
         : document.body.offsetWidth > 400
-          ? "narrow"
-          : "phone"
+          ? 'narrow'
+          : 'phone'
     }
   }
 
   componentDidMount () {
-    window.addEventListener("resize", this.resizeListener)
+    window.addEventListener('resize', this.resizeListener)
   }
 
   componentWillUnmount () {
-    window.removeEventListener("resize", this.resizeListener)
+    window.removeEventListener('resize', this.resizeListener)
   }
 
   resizeListener = _ => {
     clearTimeout(this.resizeDebounceTimeout)
     this.resizeDebounceTimeout = setTimeout(_ => {
       if (document.body.offsetWidth > 750) {
-        if (this.state.layout !== "wide") {
+        if (this.state.layout !== 'wide') {
           this.setState({
-            view: this.state.view === "COLLECTION" ? null : this.state.view,
-            layout: "wide"
+            view: this.state.view === 'COLLECTION' ? null : this.state.view,
+            layout: 'wide'
           })
         }
-      } else if (document.body.offsetWidth > 400 ) {
-        if (this.state.layout !== "narrow") this.setState({layout: "narrow"})
-      } else if (document.body.offsetWidth <= 400 ) {
-        if (this.state.layout !== "phone") this.setState({layout: "phone"})
+      } else if (document.body.offsetWidth > 400) {
+        if (this.state.layout !== 'narrow') this.setState({ layout: 'narrow' })
+      } else if (document.body.offsetWidth <= 400) {
+        if (this.state.layout !== 'phone') this.setState({ layout: 'phone' })
       }
     }, 500)
   }
@@ -62,29 +62,29 @@ export default class WelcomeView extends Component {
 
   popupMenu = createRef()
 
-  setSearch = s => this.setState({ searchFilter: s})
+  setSearch = s => this.setState({ searchFilter: s })
 
-  setFilterItems = s => this.setState({ filterItems: s})
+  setFilterItems = s => this.setState({ filterItems: s })
 
   submitSearch = _ => {
     if (this.popupMenu.current.state.active) return
     this.setState(oldState => {
       return {
-        searchFilter: "",
+        searchFilter: '',
         filterItems: oldState.filterItems.concat(
-          toWords(oldState.searchFilter).map(word => { return { display: word, value: word} })
+          toWords(oldState.searchFilter).map(word => { return { display: word, value: word } })
         )
       }
     })
   }
 
   flags = [
-    { keyword: "fav", description: "favorite discussions" },
+    { keyword: 'fav', description: 'favorite discussions' },
   ]
 
-  popupActions = { 
-    "@": props => <PopupMenu.Users {...props} />,
-    "~": props => <PopupMenu.Flags flags={this.flags} {...props} />
+  popupActions = {
+    '@': props => <PopupMenu.Users {...props} />,
+    '~': props => <PopupMenu.Flags flags={this.flags} {...props} />
   }
 
   setFocus = b => this.setState({
@@ -93,32 +93,32 @@ export default class WelcomeView extends Component {
   })
 
   toggleUploadVisible = _ => this.setState(oldState =>
-    oldState.view === "UPLOAD"
+    oldState.view === 'UPLOAD'
       ? { view: null }
-      : { view: "UPLOAD" }
+      : { view: 'UPLOAD' }
   )
 
   toggleProfileVisible = _ => this.setState(oldState =>
-    oldState.view === "PROFILE"
+    oldState.view === 'PROFILE'
       ? { view: null }
-      : { view: "PROFILE" }
+      : { view: 'PROFILE' }
   )
 
   toggleNotifVisible = _ => this.setState(oldState =>
-    oldState.view === "NOTIF"
+    oldState.view === 'NOTIF'
       ? { view: null }
-      : { view: "NOTIF" }
+      : { view: 'NOTIF' }
   )
 
   toggleCollectionVisible = _ => this.setState(oldState =>
-    oldState.view === "COLLECTION"
+    oldState.view === 'COLLECTION'
       ? { view: null }
-      : { view: "COLLECTION" }
+      : { view: 'COLLECTION' }
   )
 
   showMainView = _ => this.setState({ view: null })
 
-  render(props, state) {
+  render (props, state) {
     return <Fragment key="welcome-fragment">
       <header id="welcome-header">
         <div id="welcome-header-content">
@@ -139,11 +139,11 @@ export default class WelcomeView extends Component {
               setTextValue={this.setSearch}
             />
           </div>
-          { (!state.inputFocus || !(state.layout !== "wide")) && <Fragment>
-            {state.layout !== "wide"
+          { (!state.inputFocus || !(state.layout !== 'wide')) && <Fragment>
+            {state.layout !== 'wide'
               ? <ToolTip placement="below" content="Collection View">
                 <button
-                  data-active={state.view === "COLLECTION"} 
+                  data-active={state.view === 'COLLECTION'}
                   id="welcome-collection"
                   onClick={this.toggleCollectionVisible}>
                   {Icons.collection}
@@ -151,24 +151,24 @@ export default class WelcomeView extends Component {
               </ToolTip>
               : null
             }
-            <UploadIcon active={state.view === "UPLOAD"} toggleUploadVisible={this.toggleUploadVisible}/>
-            <WelcomeIcon active={state.view === "NOTIF"} toggleNotifVisible={this.toggleNotifVisible} />
-            <WelcomeProfile active={state.view === "PROFILE"} toggleProfileVisible={this.toggleProfileVisible} />
+            <UploadIcon active={state.view === 'UPLOAD'} toggleUploadVisible={this.toggleUploadVisible}/>
+            <WelcomeIcon active={state.view === 'NOTIF'} toggleNotifVisible={this.toggleNotifVisible} />
+            <WelcomeProfile active={state.view === 'PROFILE'} toggleProfileVisible={this.toggleProfileVisible} />
           </Fragment>}
         </div>
       </header>
       <div id="welcome-container">
-        {state.view === "UPLOAD"
+        {state.view === 'UPLOAD'
           ? <FileUpload showMainView={this.showMainView} />
-          : state.view === "PROFILE"
+          : state.view === 'PROFILE'
             ? <ProfileInformation logoutHandler={props.logoutHandler} showMainView={this.showMainView} />
-            : state.view === "NOTIF"
+            : state.view === 'NOTIF'
               ? <NotificationListing />
-              : state.view === "COLLECTION"
+              : state.view === 'COLLECTION'
                 ? <div class="welcome-column">
                   <SpacesManager oneColumn showMainView={this.showMainView} setFilterItems={this.setFilterItems} filterItems={state.filterItems} />
                 </div>
-                : state.layout !== "wide"
+                : state.layout !== 'wide'
                   ? <div class="welcome-column">
                     <RoomList setFilterItems={this.setFilterItems} filterItems={state.filterItems} searchFilter={state.searchFilter} />
                   </div>
@@ -187,47 +187,47 @@ export default class WelcomeView extends Component {
 }
 
 class WelcomeIcon extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     const unread = Client.client.getVisibleRooms()
-      .reduce((acc, room) => acc + (room.getUnreadNotificationCount("highlight") || 0), 0)
+      .reduce((acc, room) => acc + (room.getUnreadNotificationCount('highlight') || 0), 0)
     const invites = Client.client.getVisibleRooms()
-      .filter(room => room.getMyMembership() === "invite")
+      .filter(room => room.getMyMembership() === 'invite')
       .filter(room => room
         .getLiveTimeline()
         .getState(Matrix.EventTimeline.FORWARDS)
-        .getStateEvents("m.room.create", "")
-        ?.getContent()?.type === "m.space")
+        .getStateEvents('m.room.create', '')
+        ?.getContent()?.type === 'm.space')
       .length
-    this.state = { count: unread + invites}
+    this.state = { count: unread + invites }
     this.updateCount = this.updateCount.bind(this)
   }
 
-  componentDidMount() {
-    Client.client.on("sync", this.updateCount)
-    Client.client.on("RoomState.events", this.updateCount) // needed to update when creation event arrives
+  componentDidMount () {
+    Client.client.on('sync', this.updateCount)
+    Client.client.on('RoomState.events', this.updateCount) // needed to update when creation event arrives
   }
 
-  componentWillUnmount() {
-    Client.client.off("sync", this.updateCount)
-    Client.client.off("RoomState.events", this.updateCount) // needed to update when creation event arrives
+  componentWillUnmount () {
+    Client.client.off('sync', this.updateCount)
+    Client.client.off('RoomState.events', this.updateCount) // needed to update when creation event arrives
   }
 
-  updateCount() {
+  updateCount () {
     const unread = Client.client.getVisibleRooms()
-      .reduce((acc, room) => acc + (room.getUnreadNotificationCount("highlight") || 0), 0)
+      .reduce((acc, room) => acc + (room.getUnreadNotificationCount('highlight') || 0), 0)
     const invites = Client.client.getVisibleRooms()
-      .filter(room => room.getMyMembership() === "invite")
+      .filter(room => room.getMyMembership() === 'invite')
       .filter(room => room
         .getLiveTimeline()
         .getState(Matrix.EventTimeline.FORWARDS)
-        .getStateEvents("m.room.create", "")
+        .getStateEvents('m.room.create', '')
         ?.getContent()?.[mscResourceData])
       .length
-    this.setState({ count: unread + invites})
+    this.setState({ count: unread + invites })
   }
 
-  render(props, state) {
+  render (props, state) {
     return <ToolTip position="below" content="View notifications">
         <button data-active={props.active} id="welcome-notifications" onClick={props.toggleNotifVisible}>
         {Icons.bell}
@@ -238,27 +238,27 @@ class WelcomeIcon extends Component {
 }
 
 class WelcomeProfile extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     const userId = Client.client.getUserId()
     this.user = Client.client.getUser(userId)
     this.userColor = new UserColor(userId)
     this.state = {
-      avatarUrl: Client.client.getHttpUriForMxcFromHS(this.user.avatarUrl, 30, 30, "crop")
+      avatarUrl: Client.client.getHttpUriForMxcFromHS(this.user.avatarUrl, 30, 30, 'crop')
     }
   }
 
   componentDidMount () {
-    Client.client.on("sync", this.profileListener)
+    Client.client.on('sync', this.profileListener)
   }
 
   componentWillUnmount () {
-    Client.client.off("sync", this.profileListener)
+    Client.client.off('sync', this.profileListener)
   }
 
   profileListener = _ => {
     this.setState({
-      avatarUrl: Client.client.getHttpUriForMxcFromHS(this.user.avatarUrl, 30, 30, "crop")
+      avatarUrl: Client.client.getHttpUriForMxcFromHS(this.user.avatarUrl, 30, 30, 'crop')
     })
   }
 
@@ -268,7 +268,7 @@ class WelcomeProfile extends Component {
       : this.user.displayName.slice(0, 1)
   }
 
-  render(props, state) {
+  render (props, state) {
     return <ToolTip position="below" content="View profile">
       <button data-active={props.active}
         id="welcome-profile"
@@ -289,13 +289,13 @@ function UploadIcon (props) {
   </ToolTip>
 }
 
-function AboutCard (props) {
+function AboutCard () {
   return <div id="welcome-about-card">
     <div>Populus-Viewer</div>
     <hr class="styled-rule" />
     <div id="welcome-about-card-icons">
-      <div><span class="small-icon">{Icons.matrix}</span> <a target="_blank" href="https://matrix.to/#/#opentower:matrix.org">Chat with developers</a></div>
-      <div><span class="small-icon">{Icons.github}</span> <a target="_blank" href="https://github.com/opentower/populus-viewer/issues">Report a bug or request a feature</a></div>
+      <div><span class="small-icon">{Icons.matrix}</span> <a target="_blank" href="https://matrix.to/#/#opentower:matrix.org" rel="noreferrer">Chat with developers</a></div>
+      <div><span class="small-icon">{Icons.github}</span> <a target="_blank" href="https://github.com/opentower/populus-viewer/issues" rel="noreferrer">Report a bug or request a feature</a></div>
     </div>
     <hr class="styled-rule" />
     <div> Open-Tower © 2022. All Rights Reserved</div>

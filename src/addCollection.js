@@ -1,36 +1,36 @@
-import { h, Fragment, createRef, Component } from 'preact';
+import { h, Fragment, createRef, Component } from 'preact'
 import Client from './client.js'
-import * as Matrix from "matrix-js-sdk"
+import * as Matrix from 'matrix-js-sdk'
 import * as Icons from './icons.js'
 import Resource from './utils/resource.js'
 import Modal from './modal.js'
 import './styles/addCollection.css'
 
 export default class AddCollection extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
-    this.state = { 
+    this.state = {
       creating: true,
       archived: Client.client.getVisibleRooms()
-        .filter(room => room.getMyMembership() === "join")
+        .filter(room => room.getMyMembership() === 'join')
         .filter(this.isArchived)
     }
   }
 
   componentDidMount () {
-    Client.client.on("Room.accountData", this.handleRoom)
+    Client.client.on('Room.accountData', this.handleRoom)
   }
 
   componentWillUnmount () {
-    Client.client.off("Room.accountData", this.handleRoom)
+    Client.client.off('Room.accountData', this.handleRoom)
   }
 
   handleRoom = _ => {
     clearTimeout(this.roomDebounceTimeout)
     this.roomDebounceTimeout = setTimeout(_ => {
       const archived = Client.client.getVisibleRooms()
-          .filter(room => room.getMyMembership() === "join")
-          .filter(this.isArchived)
+        .filter(room => room.getMyMembership() === 'join')
+        .filter(this.isArchived)
       this.setState({
         creating: this.state.creating || archived.length === 0,
         archived
@@ -40,21 +40,21 @@ export default class AddCollection extends Component {
 
   currentListWrapper = createRef()
 
-  updateHeight = _ => this.currentListWrapper.current.style.height = `${this.currentList.current.scrollHeight}px`
+  updateHeight = _ => { this.currentListWrapper.current.style.height = `${this.currentList.current.scrollHeight}px` }
 
-  createCollection = _ => this.setState({creating:true})
+  createCollection = _ => this.setState({ creating: true })
 
-  unarchiveCollection = _ => this.setState({creating:false})
+  unarchiveCollection = _ => this.setState({ creating: false })
 
-  isArchived(room) {
+  isArchived (room) {
     const roomState = room.getLiveTimeline().getState(Matrix.EventTimeline.FORWARDS)
-    const creation = roomState.getStateEvents("m.room.create", "")
-    const isSpace = creation?.getContent()?.type === "m.space"
-    const isArchived = room.tags["m.lowpriority"]
+    const creation = roomState.getStateEvents('m.room.create', '')
+    const isSpace = creation?.getContent()?.type === 'm.space'
+    const isArchived = room.tags['m.lowpriority']
     return isSpace && isArchived && !Resource.hasResource(room)
   }
 
-  render(props,state) {
+  render (props, state) {
     return <>
       <div id="add-collection-select-view" class="select-view">
         <button onClick={this.createCollection} data-current-button={state.creating}>Create Collection</button>
@@ -64,7 +64,7 @@ export default class AddCollection extends Component {
         {state.creating
           ? <CreateCollection />
           : <div id="add-collection-unarchive-list" ref={this.currentList}>
-            {state.archived.map(room => <UnarchiveCollection room={room}/>)}
+            {state.archived.map(room => <UnarchiveCollection key={room.roomId} room={room}/>)}
           </div>
         }
       </div>
@@ -73,7 +73,7 @@ export default class AddCollection extends Component {
 }
 
 class CreateCollection extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       querying: false,
@@ -90,19 +90,19 @@ class CreateCollection extends Component {
   // DRY duplication with pdfUpload
   validateName = _ => {
     clearTimeout(this.namingTimeout)
-    this.setState({querying: true})
+    this.setState({ querying: true })
     this.namingTimeout = setTimeout(_ => {
       Client.client.getRoomIdForAlias(`#${this.toAlias(this.collectionNameInput.current.value)}:${Client.client.getDomain()}`)
-        .then(_ => this.setState({querying: false, nameavailable: false}))
+        .then(_ => this.setState({ querying: false, nameavailable: false }))
         .catch(err => {
-          if (this.collectionNameInput.current.value === "") this.setState({querying: false, nameavailable: false})
-          else if (err.errcode === "M_NOT_FOUND") this.setState({querying: false, nameavailable: true})
+          if (this.collectionNameInput.current.value === '') this.setState({ querying: false, nameavailable: false })
+          else if (err.errcode === 'M_NOT_FOUND') this.setState({ querying: false, nameavailable: true })
           else alert(err)
         })
     }, 1000)
   }
 
-  toAlias(s) {
+  toAlias (s) {
     // replace forbidden characters
     return s.replace(/[\s:]/g, '_')
   }
@@ -114,43 +114,43 @@ class CreateCollection extends Component {
     const theTopic = this.collectionTopicInput.current.value
     await Client.client.createRoom({
       room_alias_name: theAlias,
-      visibility: "private",
+      visibility: 'private',
       name: theName,
       topic: theTopic,
       // We declare the room a space
-      creation_content: { type: "m.space" },
+      creation_content: { type: 'm.space' },
       initial_state: [
         // we allow anyone to join, by default, for now
         {
-          type: "m.room.join_rules",
-          state_key: "",
-          content: {join_rule: "public"}
+          type: 'm.room.join_rules',
+          state_key: '',
+          content: { join_rule: 'public' }
         }
       ]
-    }).catch(err => { alert(err); })
+    }).catch(err => { alert(err) })
     Modal.hide()
   }
 
-  render(_props, state) {
+  render (_props, state) {
     return <Fragment>
       <form ref={this.mainForm} onSubmit={this.handleSubmit} id="create-collection">
         <label for="name">Collection Name</label>
-        <input 
+        <input
           name="name"
           class="styled-input"
           oninput={this.validateName}
           ref={this.collectionNameInput} />
         <div class="name-validation-detail">{
           state.querying
-            ? "querying..."
+            ? 'querying...'
             : state.nameavailable
-              ? "name available"
-              : "name unavailable"
+              ? 'name available'
+              : 'name unavailable'
           }
         </div>
         <label for="topic" >Collection Topic</label>
-        <textarea 
-          name="topic" 
+        <textarea
+          name="topic"
           class="styled-input"
           ref={this.collectionTopicInput} />
         <div id="create-collection-submit">
@@ -165,11 +165,11 @@ class CreateCollection extends Component {
 
 class UnarchiveCollection extends Component {
   unarchive = _ => {
-    this.setState({pending:true})
-    Client.client.deleteRoomTag(this.props.room.roomId, "m.lowpriority")
+    this.setState({ pending: true })
+    Client.client.deleteRoomTag(this.props.room.roomId, 'm.lowpriority')
   }
 
-  render(props, state) {
+  render (props, state) {
     return <button
       class="unarchive-collection"
       data-change-pending={state.pending}

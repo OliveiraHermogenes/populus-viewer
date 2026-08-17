@@ -1,12 +1,11 @@
-import { h, createRef, Component } from 'preact';
+import { h, createRef, Component } from 'preact'
 import Client from './client.js'
-import * as Matrix from "matrix-js-sdk"
+import * as Matrix from 'matrix-js-sdk'
 import './styles/avatarSelector.css'
-import { loadImageElement, blurhashFromFile } from "./utils/media.js"
+import { loadImageElement, blurhashFromFile } from './utils/media.js'
 
 export default class AvatarSelector extends Component {
-
-  constructor(props) {
+  constructor (props) {
     super()
     this.state = {
       previewUrl: props.previewUrl || undefined
@@ -26,16 +25,16 @@ export default class AvatarSelector extends Component {
   updatePreview = _ => {
     this.avatarImage = this.avatarImageInput.current.files[0]
     if (this.avatarImage && /^image/.test(this.avatarImage.type)) {
-      this.setState({previewUrl: URL.createObjectURL(this.avatarImage) })
+      this.setState({ previewUrl: URL.createObjectURL(this.avatarImage) })
     }
     this.props.handleUpdate?.()
   }
 
-  async uploadAvatar(room) {
+  async uploadAvatar (room) {
     room = room || this.props.room
     if (this.avatarImage && /^image/.test(this.avatarImage.type)) {
-      const {width, height} = await loadImageElement(this.avatarImage)
-      this.setState({progress: "generating blurhash..."})
+      const { width, height } = await loadImageElement(this.avatarImage)
+      this.setState({ progress: 'generating blurhash...' })
       const blurhash = await blurhashFromFile(this.avatarImage)
       await Client.client.uploadContent(this.avatarImage, { progressHandler: this.props.progressHandler })
         .then(e => Client.client
@@ -43,19 +42,19 @@ export default class AvatarSelector extends Component {
             info: {
               w: width,
               h: height,
-              mimetype: this.avatarImage.type ? this.avatarImage.type : "application/octet-stream",
+              mimetype: this.avatarImage.type ? this.avatarImage.type : 'application/octet-stream',
               size: this.avatarImage.size,
               blurhash
             },
             url: e.content_uri
-          }, "")
+          }, '')
         )
     } else if (this.state.previewUrl === null && this.props.room) { // null indicates deleted here
-      await Client.client.sendStateEvent(this.props.room.roomId, Matrix.EventType.RoomAvatar, {}, "")
+      await Client.client.sendStateEvent(this.props.room.roomId, Matrix.EventType.RoomAvatar, {}, '')
     }
   }
 
-  render(props, state) {
+  render (props, state) {
     return <div id="select-avatar-wrapper">
         {state.previewUrl
           ? <img onclick={this.chooseAvatar} id="select-avatar-selector" src={state.previewUrl} />

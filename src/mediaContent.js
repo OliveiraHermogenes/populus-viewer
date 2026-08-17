@@ -1,34 +1,33 @@
-import { h, createRef, Fragment, Component } from 'preact';
+import { h, createRef, Fragment, Component } from 'preact'
 import Resource from './utils/resource.js'
 import Location from './utils/location.js'
-import Toast from "./toast.js"
+import Toast from './toast.js'
 import History from './history.js'
 import WaveSurfer from 'wavesurfer.js'
 import Client from './client.js'
 import { mulberry32, hashString } from './utils/math.js'
-import * as Matrix from "matrix-js-sdk"
+import * as Matrix from 'matrix-js-sdk'
 import { UserColor } from './utils/colors.js'
-import { onlineOrAlert } from "./utils/alerts.js"
+import { onlineOrAlert } from './utils/alerts.js'
 import Regions from 'wavesurfer.js/src/plugin/regions/'
 import './styles/mediaContent.css'
-import { mscLocation, mscMediaFragment, populusHighlight, lastViewed } from "./constants.js"
+import { mscLocation, mscMediaFragment, populusHighlight, lastViewed } from './constants.js'
 
 export default class MediaContent extends Component {
-
   // we expose this method so that we can unformly sanatize position-strings
   // before passing them to components that expect timestamps
-  static positionToTimestamp(pos, room) {
+  static positionToTimestamp (pos, room) {
     const tryLastPosition = room?.getAccountData(lastViewed)?.getContent().position
     const tryParse = parseInt(pos, 10)
     return Number.isInteger(tryParse)
-      ? tryParse 
+      ? tryParse
       // need isInteger because 0 is falsey
       : Number.isInteger(tryLastPosition)
-      ? tryLastPosition
-      : 0
+        ? tryLastPosition
+        : 0
   }
 
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.hasFetched = new Promise((resolve, reject) => {
       this.resolveFetch = resolve
@@ -38,35 +37,35 @@ export default class MediaContent extends Component {
     this.isVideo = props.mimetype.match(/^video/)
     this.rightInertia = 1
     this.leftInertia = 1
-    this.zoomFactor = 1 
+    this.zoomFactor = 1
   }
 
-  componentDidMount() { 
-    this.fetchMedia() 
+  componentDidMount () {
+    this.fetchMedia()
   }
 
-  componentWillUnmount() { 
+  componentWillUnmount () {
     clearTimeout(this.inertiaTimeout)
     clearTimeout(this.longPressTimeout)
     clearTimeout(this.saveLocationTimeout)
-    if (this.wavesurfer) this.wavesurfer.destroy() 
+    if (this.wavesurfer) this.wavesurfer.destroy()
   }
 
-  componentDidUpdate(prev) {
+  componentDidUpdate (prev) {
     if (this.state.ready) {
       const duration = this.wavesurfer.getDuration()
       const timeSec = this.wavesurfer.getCurrentTime()
-      if (this.props.focus && this.props.focus?.getChild() !== prev.focus?.getChild() ) {
-        // focusing new annotation: jump to that 
+      if (this.props.focus && this.props.focus?.getChild() !== prev.focus?.getChild()) {
+        // focusing new annotation: jump to that
         if (this.stampMatchesFocus()) this.centerLocation(this.props.focus)
         // if the timestamp is the same as the one we get from the focus, we center the beginning of the focus on the nose
-        else if (this.props.timeStamp < 0 || this.props.timeStamp > duration ) this.handleBadTimeStamp()
+        else if (this.props.timeStamp < 0 || this.props.timeStamp > duration) this.handleBadTimeStamp()
         // if the timestamp is invalid, we handle it
         else this.wavesurfer.seekAndCenter(this.props.timeStamp / duration)
         // otherwise we center based on the timestamp
-      } else if ("timeStamp" in this.props && 
-        Math.abs(this.props.timeStamp - prev.timeStamp) > 2 && //timestamp changed signifiantly, and
-        Math.abs(this.props.timeStamp - timeSec) > 2 //we're not already at the location
+      } else if ('timeStamp' in this.props &&
+        Math.abs(this.props.timeStamp - prev.timeStamp) > 2 && // timestamp changed signifiantly, and
+        Math.abs(this.props.timeStamp - timeSec) > 2 // we're not already at the location
       ) {
         // If there's no focus, we center based on the timestamp (use "in"
         // since 0 is falsey), assuming it's changed by enough
@@ -74,7 +73,7 @@ export default class MediaContent extends Component {
         // if the timestamp is invalid, we handle it
         else this.wavesurfer.seekAndCenter(this.props.timeStamp / duration)
         // otherwise we center based on the timestamp
-      } else if (this.props.secondaryFocus && this.props.secondaryFocus?.getIntervalStart() !== prev.secondaryFocus?.getIntervalStart() ) {
+      } else if (this.props.secondaryFocus && this.props.secondaryFocus?.getIntervalStart() !== prev.secondaryFocus?.getIntervalStart()) {
         // and if the only thing that has changed is the secondary focus, we jump to that.
         this.centerLocation(this.props.secondaryFocus)
       }
@@ -85,7 +84,7 @@ export default class MediaContent extends Component {
     }
   }
 
-  hasSelection() { return !!this.state.selection }
+  hasSelection () { return !!this.state.selection }
 
   mediaView = createRef()
 
@@ -100,21 +99,21 @@ export default class MediaContent extends Component {
     const color = new UserColor(userId).solid
     this.clearSelection()
     this.pause()
-    const selection = this.wavesurfer.addRegion({ 
-      start, 
-      end, 
+    const selection = this.wavesurfer.addRegion({
+      start,
+      end,
       color,
       drag: false,
-      id: "active-selection"
+      id: 'active-selection'
     })
-    this.setState({ selection }, _ => document.dispatchEvent(new Event("selectionchange")))
+    this.setState({ selection }, _ => document.dispatchEvent(new Event('selectionchange')))
   }
 
   clearSelection = _ => {
     if (this.state.selection) {
       this.state.selection.remove()
       this.video.current?.clearOverlayPosition()
-      this.setState({selection: null}, _ => document.dispatchEvent(new Event("selectionchange")))
+      this.setState({ selection: null }, _ => document.dispatchEvent(new Event('selectionchange')))
     }
   }
 
@@ -123,18 +122,18 @@ export default class MediaContent extends Component {
       [mscMediaFragment]: {
         start: Math.floor(this.state.selection.start * 1000),
         end: Math.ceil(this.state.selection.end * 1000),
-        ...(this.videoOverlay.current 
+        ...(this.videoOverlay.current
           ? {
-            x: this.videoOverlay.current.spotlightX,
-            y: this.videoOverlay.current.spotlightY,
-            w: this.videoOverlay.current.spotlightWidth,
-            h: this.videoOverlay.current.spotlightHeight,
-          }
+              x: this.videoOverlay.current.spotlightX,
+              y: this.videoOverlay.current.spotlightY,
+              w: this.videoOverlay.current.spotlightWidth,
+              h: this.videoOverlay.current.spotlightHeight,
+            }
           : null
         )
       },
       [populusHighlight]: {
-        activityStatus: "pending",
+        activityStatus: 'pending',
         creator: Client.client.getUserId()
       }
     }
@@ -144,10 +143,10 @@ export default class MediaContent extends Component {
     if (!onlineOrAlert()) return
     const theDomain = Client.client.getDomain()
     const theRoomState = this.props.room.getLiveTimeline().getState(Matrix.EventTimeline.FORWARDS)
-    const theLevels = theRoomState.getStateEvents(Matrix.EventType.RoomPowerLevels, "")
+    const theLevels = theRoomState.getStateEvents(Matrix.EventType.RoomPowerLevels, '')
     const locationData = this.generateLocation()
     return Client.client.createRoom({
-      visibility: "private",
+      visibility: 'private',
       name: `highlighted interval from ${this.state.selection.start} to ${this.state.selection.end}`,
       power_level_content_override: {
         users: Object.assign({}, theLevels.getContent().users, {
@@ -156,8 +155,8 @@ export default class MediaContent extends Component {
       },
       initial_state: [{
         type: Matrix.EventType.RoomJoinRules,
-        state_key: "",
-        content: {join_rule: "public"}
+        state_key: '',
+        content: { join_rule: 'public' }
       },
       {
         type: Matrix.EventType.SpaceParent, // we indicate that the current room is the parent
@@ -185,20 +184,19 @@ export default class MediaContent extends Component {
   }
 
   handlePointerdown = e => {
-    if (e.target.tagName === "WAVE") {
+    if (e.target.tagName === 'WAVE') {
       clearTimeout(this.longPressTimeout)
       const percentAcross = (e.clientX + e.target.scrollLeft) / e.target.scrollWidth
       this.longPressTimeout = setTimeout(_ => {
         this.wavesurfer.seekTo(percentAcross)
         this.createSelection(percentAcross * this.wavesurfer.getDuration(), percentAcross * this.wavesurfer.getDuration() + 5)
-      }, 500) 
-    }
-    else if (["REGION","HANDLE"].includes(e.target.tagName)) return
+      }, 500)
+    } else if (['REGION', 'HANDLE'].includes(e.target.tagName)) return
     else {
       if (e.noClear || this.video.current?.base.contains(e.target)) return
       clearTimeout(this.longPressTimeout)
       this.clearSelection()
-    } 
+    }
   }
 
   getCurrentLocations = _ => {
@@ -223,9 +221,9 @@ export default class MediaContent extends Component {
     if (this.state.selection) {
       this.state.selection.play()
     } else {
-      this.wavesurfer.seekAndCenter(this.wavesurfer.getCurrentTime() / this.wavesurfer.getDuration() )
-      //this gets a little dicy, just because you want all the repositioning to
-      //be done *before* there's any risk of scroll events unsetting the autoCenter
+      this.wavesurfer.seekAndCenter(this.wavesurfer.getCurrentTime() / this.wavesurfer.getDuration())
+      // this gets a little dicy, just because you want all the repositioning to
+      // be done *before* there's any risk of scroll events unsetting the autoCenter
       this.lastLeft = this.wavesurfer.drawer.wrapper.scrollLeft
       this.wavesurfer.drawer.params.autoCenter = true
       this.wavesurfer.play()
@@ -243,7 +241,7 @@ export default class MediaContent extends Component {
     clearTimeout(this.inertiaTimeout)
     this.wavesurfer.skip(1 * this.rightInertia * (1 / this.zoomFactor))
     this.leftInertia = 1
-    this.rightInertia += .1
+    this.rightInertia += 0.1
     this.inertiaTimeout = setTimeout(this.resetInertia, 500)
   }
 
@@ -251,7 +249,7 @@ export default class MediaContent extends Component {
     clearTimeout(this.inertiaTimeout)
     this.wavesurfer.skip(-1 * this.leftInertia * (1 / this.zoomFactor))
     this.rightInertia = 1
-    this.leftInertia += .1
+    this.leftInertia += 0.1
     this.inertiaTimeout = setTimeout(this.resetInertia, 500)
   }
 
@@ -265,17 +263,16 @@ export default class MediaContent extends Component {
     if (this.state.selection) {
       clearTimeout(this.inertiaTimeout)
       if (e.shiftKey) {
-        this.state.selection.onResize(.2 * this.rightInertia * (1 / this.zoomFactor), "start") 
+        this.state.selection.onResize(0.2 * this.rightInertia * (1 / this.zoomFactor), 'start')
         this.wavesurfer.seekAndCenter(this.state.selection.start / this.wavesurfer.getDuration())
       } else {
-        this.state.selection.onResize(.2 * this.rightInertia * (1 / this.zoomFactor)) 
+        this.state.selection.onResize(0.2 * this.rightInertia * (1 / this.zoomFactor))
         this.wavesurfer.seekAndCenter(this.state.selection.end / this.wavesurfer.getDuration())
       }
       this.leftInertia = 1
-      this.rightInertia += .1
+      this.rightInertia += 0.1
       this.inertiaTimeout = setTimeout(this.resetInertia, 500)
-    }
-    else this.scrubRight()
+    } else this.scrubRight()
   }
 
   selLeft = e => {
@@ -283,18 +280,16 @@ export default class MediaContent extends Component {
     if (this.state.selection) {
       clearTimeout(this.inertiaTimeout)
       if (e.shiftKey) {
-        this.state.selection.onResize(-.2 * this.leftInertia * (1 / this.zoomFactor), "start") 
+        this.state.selection.onResize(-0.2 * this.leftInertia * (1 / this.zoomFactor), 'start')
         this.wavesurfer.seekAndCenter(this.state.selection.start / this.wavesurfer.getDuration())
-      }
-      else {
-        this.state.selection.onResize(-.2 * this.leftInertia * (1 / this.zoomFactor)) 
+      } else {
+        this.state.selection.onResize(-0.2 * this.leftInertia * (1 / this.zoomFactor))
         this.wavesurfer.seekAndCenter(this.state.selection.end / this.wavesurfer.getDuration())
       }
       this.rightInertia = 1
-      this.leftInertia += .1
+      this.leftInertia += 0.1
       this.inertiaTimeout = setTimeout(this.resetInertia, 500)
-    }
-    else this.scrubLeft()
+    } else this.scrubLeft()
   }
 
   centerLocation = loc => {
@@ -308,20 +303,20 @@ export default class MediaContent extends Component {
 
   handleBadTimeStamp = _ => {
     const newTS = Math.floor(this.props.timeStamp < 0 ? 0 : this.wavesurfer.getDuration())
-    History.replace(`/${encodeURIComponent(this.props.resourceAlias)}` + 
-      `/${newTS}` + 
-      `${this.props.roomFocused ? `/${this.props.roomFocused}` : ""}` +
-      `${this.props.eventFocused ? `/${this.props.eventFocused}` : ""}`
+    History.replace(`/${encodeURIComponent(this.props.resourceAlias)}` +
+      `/${newTS}` +
+      `${this.props.roomFocused ? `/${this.props.roomFocused}` : ''}` +
+      `${this.props.eventFocused ? `/${this.props.eventFocused}` : ''}`
     )
   }
 
   stampMatchesFocus = _ => {
-    return this.props.timeStamp == Math.floor(this.props.focus.getIntervalStart() / 1000)
+    return this.props.timeStamp === Math.floor(this.props.focus.getIntervalStart() / 1000)
   }
 
   catchFetchMediaError = e => {
     Toast.set(<Fragment>
-      <h3 id="toast-header">Couldn't fetch the {this.isVideo ? "audio file" : "video"}...</h3>
+      <h3 id="toast-header">Couldn't fetch the {this.isVideo ? 'audio file' : 'video'}...</h3>
       <div>Tried to fetch: </div>
       <pre>{this.props.resourceAlias}</pre>
       <div>Here's the error message:</div>
@@ -351,13 +346,13 @@ export default class MediaContent extends Component {
           return URL.createObjectURL(blob)
         })
         .catch(this.catchFetchMediaError)
-    } else { console.log(`found file for ${this.props.room.name} in store` ) }
+    } else { console.log(`found file for ${this.props.room.name} in store`) }
     if (theMedia.pcm && !MediaContent.MediaStore[theMedia.pcm]) {
       MediaContent.PCMStore[theMedia.pcm] = window.fetch(Client.client.getHttpUriForMxcFromHS(theMedia.pcm))
         .then(response => response.json())
         .catch(err => console.log("Couldn't fetch PCM data", err))
-    } else if (theMedia.pcm) { console.log(`found PCM for ${this.props.room.name} in store` ) }
-    if (this.isVideo) this.props.setMobileButtonColor("var(--contrast-text)")
+    } else if (theMedia.pcm) { console.log(`found PCM for ${this.props.room.name} in store`) }
+    if (this.isVideo) this.props.setMobileButtonColor('var(--contrast-text)')
     if (this.errorCondition) return
     MediaContent.MediaStore[theMedia.url].then(mediaUrl => this.props.resource.resolveFetch(mediaUrl))
     MediaContent.MediaStore[theMedia.url].then(this.drawMedia(MediaContent.PCMStore[theMedia.pcm]))
@@ -366,13 +361,13 @@ export default class MediaContent extends Component {
   }
 
   drawMedia = pcm => async mediaUrl => {
-    this.props.setMediaLoadingStatus("Rendering waveform...")
+    this.props.setMediaLoadingStatus('Rendering waveform...')
     this.wavesurfer = new WaveSurfer.create({
       container: '#waveform',
       backend: 'MediaElement',
       barWidth: 5,
       scrollParent: true,
-      plugins: [ Regions.create() ],
+      plugins: [Regions.create()],
     })
     if (!pcm) {
       pcm = []
@@ -390,50 +385,52 @@ export default class MediaContent extends Component {
       const height = document.body.clientHeight
       const duration = Math.ceil(this.wavesurfer.getDuration())
       this.props.setMediaDuration(duration)
-      if ("timeStamp" in this.props) {
+      if ('timeStamp' in this.props) {
         if (this.props.timeStamp < 0 || this.props.timeStamp > duration) this.handleBadTimeStamp()
         else if (this.props.focus && this.stampMatchesFocus()) this.centerLocation(this.props.focus)
         else this.wavesurfer.seekAndCenter(this.props.timeStamp / duration)
       }
-      this.props.setContentDimensions(height,width)
-      this.setState({ready: true})
-    });
+      this.props.setContentDimensions(height, width)
+      this.setState({ ready: true })
+    })
     this.wavesurfer.on('seek', _ => {
       if (this.state.ready) {
         clearTimeout(this.seekTimeout)
         this.seekTimeout = setTimeout(_ => {
           const timeSec = Math.floor(this.wavesurfer.getCurrentTime())
-          if (timeSec !== this.props.timeStamp) History.push(
-            `/${encodeURIComponent(this.props.resourceAlias)}` + 
-            `/${timeSec}` + 
-            `${this.props.roomFocused ? `/${this.props.roomFocused}` : ""}` +
-            `${this.props.eventFocused ? `/${this.props.eventFocused}` : ""}`
-          )
+          if (timeSec !== this.props.timeStamp) {
+            History.push(
+            `/${encodeURIComponent(this.props.resourceAlias)}` +
+            `/${timeSec}` +
+            `${this.props.roomFocused ? `/${this.props.roomFocused}` : ''}` +
+            `${this.props.eventFocused ? `/${this.props.eventFocused}` : ''}`
+            )
+          }
           if (this.hasSelection) {
             const currentSec = this.wavesurfer.getCurrentTime()
-            if (currentSec < this.state.selection?.start - .01) this.clearSelection()
-            if (currentSec > this.state.selection?.end + .01) this.clearSelection()
+            if (currentSec < this.state.selection?.start - 0.01) this.clearSelection()
+            if (currentSec > this.state.selection?.end + 0.01) this.clearSelection()
           }
         }, 250)
       }
       this.updateSavedLocation()
       this.updateVideoLocation()
-    });
-    this.wavesurfer.on('scroll', e => { 
+    })
+    this.wavesurfer.on('scroll', e => {
       if (Math.abs(this.lastLeft - e.target.scrollLeft) > 25) {
-        this.wavesurfer.drawer.params.autoCenter = false;
+        this.wavesurfer.drawer.params.autoCenter = false
         this.cancelPointer()
       } else {
         this.lastLeft = e.target.scrollLeft
       }
     })
-    this.wavesurfer.on("audioprocess", _ => {
+    this.wavesurfer.on('audioprocess', _ => {
       this.updateSavedLocation()
       !this.updateVideoLocationLocked && this.updateVideoLocation()
     })
   }
 
-  filterAnnotations = loc => loc.getType() === "media-fragment"
+  filterAnnotations = loc => loc.getType() === 'media-fragment'
 
   setVideo = videoLocation => this.setState({ videoLocation })
 
@@ -441,18 +438,18 @@ export default class MediaContent extends Component {
     // we only save if you've stopped zipping around for more than a second
     clearTimeout(this.saveLocationTimeout)
     this.saveLocationTimeout = setTimeout(_ => {
-        Client.client.setRoomAccountData(this.props.room.roomId, lastViewed, {
-          deviceId: Client.client.deviceId,
-          position: this.props.timeStamp
-        })
+      Client.client.setRoomAccountData(this.props.room.roomId, lastViewed, {
+        deviceId: Client.client.deviceId,
+        position: this.props.timeStamp
+      })
     }, 1500)
   }
 
   updateVideoLocation = _ => {
     const locations = this.getCurrentLocations()
-    if (locations.length == 0) this.setVideo(null)
+    if (locations.length === 0) this.setVideo(null)
     else {
-      locations.sort((a,b) => {
+      locations.sort((a, b) => {
         if (a.getIntervalStart() > b.getIntervalStart()) return -1
         if (a.getIntervalStart() < b.getIntervalStart()) return 1
         return 0
@@ -460,17 +457,17 @@ export default class MediaContent extends Component {
       this.setVideo(locations[0])
     }
     this.updateVideoLocationLocked = true
-    //tiny debouncer in case this gets expensive with lots of highlights
-    setTimeout(_ => this.updateVideoLocationLocked = false, 250)
+    // tiny debouncer in case this gets expensive with lots of highlights
+    setTimeout(_ => { this.updateVideoLocationLocked = false }, 250)
   }
 
-  getAnnotations() {
+  getAnnotations () {
     let didFocus = false
     const annotationData = this.props.filteredAnnotationContents
       .filter(loc => {
         if (loc.getChild() === this.props.focus?.getChild()) didFocus = true
         return this.filterAnnotations(loc)
-      }).sort((a,b) => {
+      }).sort((a, b) => {
         if (a.getIntervalStart() > b.getIntervalStart()) return 1
         if (a.getIntervalStart() < b.getIntervalStart()) return -1
         return 0
@@ -492,27 +489,28 @@ export default class MediaContent extends Component {
           break
         }
       }
-      return <WaveRegion 
+      return <WaveRegion
         setFocus={this.props.setFocus}
-        wavesurfer={this.wavesurfer} 
+        wavesurfer={this.wavesurfer}
         gutterDepth={key}
         key={loc.event.getId()}
         focused={this.props.focus?.getChild() === loc.getChild()}
-        location={loc} 
-      />})
+        location={loc}
+      />
+    })
     return annotations
   }
 
-  render(props, state) {
-    return <div id="media-view" 
+  render (props, state) {
+    return <div id="media-view"
       ref={this.mediaView}
       onPointerdown={this.handlePointerdown}
       onPointerup={this.cancelPointer}
       onPointerout={this.cancelPointer}
       data-media-is-video={this.isVideo}
     >
-      { this.isVideo 
-        ? <MediaViewVideo 
+      { this.isVideo
+        ? <MediaViewVideo
           ref={this.video}
           videoLocation={state.videoLocation}
           wavesurfer={this.wavesurfer}
@@ -521,8 +519,8 @@ export default class MediaContent extends Component {
           createSelection={this.createSelection}
           clearSelection={this.clearSelection}
           videoElement={this.videoElement}
-        /> 
-        : null 
+        />
+        : null
       }
       <div ref={this.waveform} data-annotations-focused={this.props.focus} id="waveform">
         {state.ready ? this.getAnnotations() : null}
@@ -532,43 +530,41 @@ export default class MediaContent extends Component {
 }
 
 class WaveRegion extends Component {
-
-  componentDidMount() {
+  componentDidMount () {
     const color = new UserColor(this.props.location.getCreator()).solid
     this.region = this.props.wavesurfer.addRegion({
       start: this.props.location.getIntervalStart() / 1000,
       end: this.props.location.getIntervalEnd() / 1000,
-      drag:false,
-      resize:false,
+      drag: false,
+      resize: false,
       id: this.props.location.event.getId(),
-      color: "rgba(0,0,0,0)"
+      color: 'rgba(0,0,0,0)'
     })
     this.region.element.style.setProperty('--user_solid', color)
     this.region.element.style.setProperty('--gutter_level', this.props.gutterDepth)
     if (this.props.focused) this.region.element.dataset.focused = true
-    this.region.on("click", this.setFocus)
+    this.region.on('click', this.setFocus)
   }
 
-  componentDidUpdate() {
+  componentDidUpdate () {
     if (this.props.focused) this.region.element.dataset.focused = true
     else delete this.region.element.dataset.focused
     this.region.element.style.setProperty('--gutter_level', this.props.gutterDepth)
   }
 
   setFocus = e => {
-    if (!this.props.focused) e.stopPropagation() //prevent a secondary seek
+    if (!this.props.focused) e.stopPropagation() // prevent a secondary seek
     this.props.setFocus(this.props.location)
   }
 
-  componentWillUnmount() {
+  componentWillUnmount () {
     this.region.remove()
   }
 
-  render() { }
+  render () { return null }
 }
 
 class MediaViewVideo extends Component {
-
   setOverlayPosition = e => {
     const time = this.props.wavesurfer.getCurrentTime()
     if (!this.props.hasSelection) this.props.createSelection(time, time + 1)
@@ -576,14 +572,14 @@ class MediaViewVideo extends Component {
     const videoWidth = this.props.videoElement.current.videoWidth
     const videoHeight = this.props.videoElement.current.videoHeight
     const videoScale = boundingRect.width / videoWidth
-    this.setState({ 
+    this.setState({
       initialPosition: new DOMRect(
         Math.min(videoWidth - ((100 / videoScale)), Math.round(e.offsetX / videoScale)),
         Math.min(videoHeight - ((100 / videoScale)), Math.round(e.offsetY / videoScale)),
         Math.round(100 / videoScale),
-        Math.round(100 / videoScale) 
+        Math.round(100 / videoScale)
       )
-    }) 
+    })
   }
 
   clearOverlayPosition = e => {
@@ -592,28 +588,28 @@ class MediaViewVideo extends Component {
     this.setState({ initialPosition: null })
   }
 
-  render(props, state) {
+  render (props, state) {
     return <div id="media-view-video">
       <div id="media-view-video-wrapper">
         <video onclick={this.setOverlayPosition} ref={props.videoElement} />
         {props.hasSelection
-          ? state.initialPosition 
-            ? <MediaViewVideoOverlay 
+          ? state.initialPosition
+            ? <MediaViewVideoOverlay
                 mutable={true}
-                ref={props.videoOverlay} 
-                videoElement={props.videoElement} 
-                clear={this.props.clearSelection} 
-                initialPosition={state.initialPosition} 
-            /> 
+                ref={props.videoOverlay}
+                videoElement={props.videoElement}
+                clear={this.props.clearSelection}
+                initialPosition={state.initialPosition}
+            />
             : null
-          : props.videoLocation?.getMediaRect() 
-          ? <MediaViewVideoOverlay 
+          : props.videoLocation?.getMediaRect()
+            ? <MediaViewVideoOverlay
               mutable={false}
-              ref={props.videoOverlay} 
-              videoElement={props.videoElement} 
-              initialPosition={props.videoLocation.getMediaRect()} 
-          /> 
-          : props.videoOverlay.current = null
+              ref={props.videoOverlay}
+              videoElement={props.videoElement}
+              initialPosition={props.videoLocation.getMediaRect()}
+          />
+            : props.videoOverlay.current = null
         }
       </div>
     </div>
@@ -621,7 +617,7 @@ class MediaViewVideo extends Component {
 }
 
 class MediaViewVideoOverlay extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.spotlightScale = props.videoElement.current.getBoundingClientRect().width / props.videoElement.current.videoWidth
     this.spotlightWidth = props.initialPosition.width
@@ -630,7 +626,7 @@ class MediaViewVideoOverlay extends Component {
     this.spotlightY = props.initialPosition.y
   }
 
-  componentDidUpdate(prev) {
+  componentDidUpdate (prev) {
     // we want to upday only when we start selection or when we're not mutable
     // and the playback location changes
     if (prev.mutable !== this.props.mutable || !this.props.mutable) {
@@ -638,10 +634,10 @@ class MediaViewVideoOverlay extends Component {
       this.spotlightHeight = this.props.initialPosition.height
       this.spotlightX = this.props.initialPosition.x
       this.spotlightY = this.props.initialPosition.y
-      this.overlay.current.style.setProperty("--spotlightX", `${this.spotlightX}px`)
-      this.overlay.current.style.setProperty("--spotlightY", `${this.spotlightY}px`)
-      this.overlay.current.style.setProperty("--spotlightWidth", `${this.spotlightWidth}px`)
-      this.overlay.current.style.setProperty("--spotlightHeight", `${this.spotlightHeight}px`)
+      this.overlay.current.style.setProperty('--spotlightX', `${this.spotlightX}px`)
+      this.overlay.current.style.setProperty('--spotlightY', `${this.spotlightY}px`)
+      this.overlay.current.style.setProperty('--spotlightWidth', `${this.spotlightWidth}px`)
+      this.overlay.current.style.setProperty('--spotlightHeight', `${this.spotlightHeight}px`)
     }
   }
 
@@ -658,33 +654,33 @@ class MediaViewVideoOverlay extends Component {
 
   handleVideoResize = _ => {
     this.spotlightScale = this.props.videoElement.current.getBoundingClientRect().width / this.props.videoElement.current.videoWidth
-    this.overlay.current.style.setProperty("--spotlightScale", `${this.spotlightScale}`)
+    this.overlay.current.style.setProperty('--spotlightScale', `${this.spotlightScale}`)
   }
 
   handleDrag = e => {
     e.preventDefault()
     const videoWidth = this.props.videoElement.current.videoWidth
     const videoHeight = this.props.videoElement.current.videoHeight
-    this.spotlightX = Math.round(Math.min(Math.max(0, this.initialX + ((e.clientX  - this.initialClientX) / this.spotlightScale)), videoWidth - this.spotlightWidth))
-    this.spotlightY = Math.round(Math.min(Math.max(0, this.initialY + ((e.clientY  - this.initialClientY) / this.spotlightScale)), videoHeight - this.spotlightHeight))
-    this.overlay.current.style.setProperty("--spotlightX", `${this.spotlightX}px`)
-    this.overlay.current.style.setProperty("--spotlightY", `${this.spotlightY}px`)
+    this.spotlightX = Math.round(Math.min(Math.max(0, this.initialX + ((e.clientX - this.initialClientX) / this.spotlightScale)), videoWidth - this.spotlightWidth))
+    this.spotlightY = Math.round(Math.min(Math.max(0, this.initialY + ((e.clientY - this.initialClientY) / this.spotlightScale)), videoHeight - this.spotlightHeight))
+    this.overlay.current.style.setProperty('--spotlightX', `${this.spotlightX}px`)
+    this.overlay.current.style.setProperty('--spotlightY', `${this.spotlightY}px`)
   }
 
   handleResizeX = e => {
     e.preventDefault()
     const videoWidth = this.props.videoElement.current.videoWidth
-    //the 40px minimum here accomodates the handles
+    // the 40px minimum here accomodates the handles
     this.spotlightWidth = Math.round(Math.min(videoWidth - this.spotlightX, Math.max(40, this.initialWidth + ((e.clientX - this.initialClientX) / this.spotlightScale))))
-    this.overlay.current.style.setProperty("--spotlightWidth", `${this.spotlightWidth}px`)
+    this.overlay.current.style.setProperty('--spotlightWidth', `${this.spotlightWidth}px`)
   }
 
   handleResizeY = e => {
     e.preventDefault()
     const videoHeight = this.props.videoElement.current.videoHeight
-    //the 40px minimum here accomodates the handles
+    // the 40px minimum here accomodates the handles
     this.spotlightHeight = Math.round(Math.min(videoHeight - this.spotlightY, Math.max(40, this.initialHeight + ((e.clientY - this.initialClientY) / this.spotlightScale))))
-    this.overlay.current.style.setProperty("--spotlightHeight", `${this.spotlightHeight}px`)
+    this.overlay.current.style.setProperty('--spotlightHeight', `${this.spotlightHeight}px`)
   }
 
   startDrag = e => {
@@ -733,15 +729,15 @@ class MediaViewVideoOverlay extends Component {
     })
   }
 
-  render(props, state) {
+  render (props) {
     const styleVars = {
-      "--spotlightX": `${this.spotlightX}px`,
-      "--spotlightY": `${this.spotlightY}px`,
-      "--spotlightWidth": `${this.spotlightWidth}px`,
-      "--spotlightHeight": `${this.spotlightHeight}px`,
-      "--spotlightScale": this.spotlightScale,
+      '--spotlightX': `${this.spotlightX}px`,
+      '--spotlightY': `${this.spotlightY}px`,
+      '--spotlightWidth': `${this.spotlightWidth}px`,
+      '--spotlightHeight': `${this.spotlightHeight}px`,
+      '--spotlightScale': this.spotlightScale,
     }
-    return <div id="media-view-video-overlay" 
+    return <div id="media-view-video-overlay"
       data-media-selection-mutable={props.mutable}
       style={styleVars}
       ref={this.overlay}>

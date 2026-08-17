@@ -5,45 +5,45 @@ import * as Matrix from 'matrix-js-sdk'
 import Location from './utils/location.js'
 import Resource from './utils/resource.js'
 
-export function processLinks(elt) {
+export function processLinks (elt) {
   if (elt) {
-    const linkArray = Array.from(elt.querySelectorAll("a[href]"))
+    const linkArray = Array.from(elt.querySelectorAll('a[href]'))
     linkArray
       .forEach(link => {
         try {
-          const url = new URL(link.getAttribute("href"))
+          const url = new URL(link.getAttribute('href'))
           if (url.host === window.location.host && url.pathname === window.location.pathname) {
             const hash = url.hash
-            link.addEventListener("click", e => {
+            link.addEventListener('click', e => {
               e.preventDefault()
               History.push(hash.slice(1))
             })
-          } else if (url.host === "matrix.to") {
+          } else if (url.host === 'matrix.to') {
             const user = Client.client.getUser(url.hash.slice(2))
-            link.addEventListener("click", e => e.preventDefault()) // do nothing until we have DMS worked out
+            link.addEventListener('click', e => e.preventDefault()) // do nothing until we have DMS worked out
             if (user) {
               const colors = new UserColor(user.userId)
               link.style.setProperty('--user_dark', colors.dark)
             } else {
-              link.addEventListener("click", async e => {
-		e.preventDefault()
-		// we go up to find the message event id and use it to
-		// set history so the user can come back to the right place
-		let parent = link.parentElement
-		while (parent && !parent.id) {
-		  parent = parent.parentElement
-		}
-		const messageId = parent ? parent.id : null
-		await handleLink(url, messageId)
-	      })
+              link.addEventListener('click', async e => {
+                e.preventDefault()
+                // we go up to find the message event id and use it to
+                // set history so the user can come back to the right place
+                let parent = link.parentElement
+                while (parent && !parent.id) {
+                  parent = parent.parentElement
+                }
+                const messageId = parent ? parent.id : null
+                await handleLink(url, messageId)
+              })
             }
           }
-        } catch (e) {}
+        } catch {}
       })
   }
 }
 
-async function handleLink(url, messageId) {
+async function handleLink (url, messageId) {
   const urlParts = url.hash.slice(2).split('?')[0].split('/')
   const roomIdOrAlias = urlParts[0]
   const eventId = urlParts[1] ? urlParts[1] : null
@@ -60,15 +60,15 @@ async function handleLink(url, messageId) {
     const roomId = roomIdOrAlias
     const theRoom = Client.client.getRoom(roomId)
     const linkResource = theRoom
-	  .getLiveTimeline().getState(Matrix.EventTimeline.BACKWARDS)
-	  .getStateEvents(Matrix.EventType.SpaceParent)[0]?.getStateKey()
+      .getLiveTimeline().getState(Matrix.EventTimeline.BACKWARDS)
+      .getStateEvents(Matrix.EventType.SpaceParent)[0]?.getStateKey()
     const roomAlias = linkResource
-	  ? Client.client.getRoom(linkResource)?.getCanonicalAlias()
-	  : null
+      ? Client.client.getRoom(linkResource)?.getCanonicalAlias()
+      : null
     const linkAnnotation = linkResource
-	  ? Client.client.getRoom(linkResource)?.getLiveTimeline().getState(Matrix.EventTimeline.BACKWARDS)
-	  .getStateEvents(Matrix.EventType.SpaceChild, theRoom.roomId)
-	  : null
+      ? Client.client.getRoom(linkResource)?.getLiveTimeline().getState(Matrix.EventTimeline.BACKWARDS)
+        .getStateEvents(Matrix.EventType.SpaceChild, theRoom.roomId)
+      : null
     const linkLocation = linkAnnotation ? new Location(linkAnnotation) : null
     const alias = encodeURIComponent(roomAlias.slice(1))
     if (alias) {

@@ -1,9 +1,9 @@
-import { h, Component, createRef, Fragment } from 'preact';
+import { h, Component, createRef, Fragment } from 'preact'
 import './styles/annotationListing.css'
-import * as Matrix from "matrix-js-sdk"
+import * as Matrix from 'matrix-js-sdk'
 import { renderLatexInElement } from './latex.js'
 import { processLinks } from './links.js'
-import { mscMarkupMsgKey } from "./constants.js"
+import { mscMarkupMsgKey } from './constants.js'
 import Client from './client.js'
 import MemberPill from './memberPill.js'
 import { UserColor } from './utils/colors.js'
@@ -14,11 +14,11 @@ import * as Icons from './icons.js'
 import * as PopupMenu from './popUpMenu.js'
 
 export default class AnnotationListing extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       typing: {},
-      sort: "Activity",
+      sort: 'Activity',
       sortOrder: 1,
       searchFocus: false
     }
@@ -26,12 +26,12 @@ export default class AnnotationListing extends Component {
   }
 
   componentDidMount () {
-    Client.client.on("RoomMember.typing", this.handleTypingNotification)
+    Client.client.on('RoomMember.typing', this.handleTypingNotification)
     document.addEventListener('keydown', this.handleKeydown)
   }
 
   componentWillUnmount () {
-    Client.client.off("RoomMember.typing", this.handleTypingNotification)
+    Client.client.off('RoomMember.typing', this.handleTypingNotification)
     document.removeEventListener('keydown', this.handleKeydown)
   }
 
@@ -43,7 +43,7 @@ export default class AnnotationListing extends Component {
       this.setState(prevState => {
         const myId = Client.client.getUserId()
         const typingOtherThanMe = event.getContent().user_ids.filter(x => x !== myId)
-        return {typing: { ...prevState.typing, [member.roomId]: typingOtherThanMe}}
+        return { typing: { ...prevState.typing, [member.roomId]: typingOtherThanMe } }
       })
     }
   }
@@ -53,11 +53,11 @@ export default class AnnotationListing extends Component {
     if (e.altKey && e.shiftKey && e.key === 'Tab') this.props.focusPrev()
   }
 
-  setFocus = searchFocus => this.setState({searchFocus})
+  setFocus = searchFocus => this.setState({ searchFocus })
 
   searchInput = createRef()
 
-  getSortFunc() {
+  getSortFunc () {
     switch (this.state.sort) {
       case 'Page': return this.byPage
       case 'Activity': return this.byActivity
@@ -96,36 +96,36 @@ export default class AnnotationListing extends Component {
 
   sortByActivity = _ => {
     const initialSort = this.state.sort
-    if (initialSort === "Activity") this.setState(oldState => { return { sortOrder: oldState.sortOrder * -1 } })
-    else this.setState({ sort: "Activity" })
+    if (initialSort === 'Activity') this.setState(oldState => { return { sortOrder: oldState.sortOrder * -1 } })
+    else this.setState({ sort: 'Activity' })
   }
 
   sortByPage = _ => {
     const initialSort = this.state.sort
-    if (initialSort === "Page") this.setState(oldState => { return { sortOrder: oldState.sortOrder * -1 } })
-    else this.setState({ sort: "Page" })
+    if (initialSort === 'Page') this.setState(oldState => { return { sortOrder: oldState.sortOrder * -1 } })
+    else this.setState({ sort: 'Page' })
   }
 
   sortByCreation = _ => {
     const initialSort = this.state.sort
-    if (initialSort === "Creation") this.setState(oldState => { return { sortOrder: oldState.sortOrder * -1 } })
-    else this.setState({ sort: "Creation" })
+    if (initialSort === 'Creation') this.setState(oldState => { return { sortOrder: oldState.sortOrder * -1 } })
+    else this.setState({ sort: 'Creation' })
   }
 
   flipSort = _ => this.setState(oldState => { return { sortOrder: oldState.sortOrder * -1 } })
 
   flags = [
-    { keyword: "me", description: "my annotations" },
-    { keyword: "hour", description: "annotations from the last hour" },
-    { keyword: "day", description: "annotations from the last day" },
-    { keyword: "week", description: "annotations from the last week" },
-    { keyword: "unread", description: "unread annotations" },
-    { keyword: "question", description: "annotations asking questions" }
+    { keyword: 'me', description: 'my annotations' },
+    { keyword: 'hour', description: 'annotations from the last hour' },
+    { keyword: 'day', description: 'annotations from the last day' },
+    { keyword: 'week', description: 'annotations from the last week' },
+    { keyword: 'unread', description: 'unread annotations' },
+    { keyword: 'question', description: 'annotations asking questions' }
   ]
 
   popupActions = {
-    "@": props => <PopupMenu.Members roomId={this.props.roomId} {...props} />,
-    "~": props => <PopupMenu.Flags flags={this.flags} {...props} />
+    '@': props => <PopupMenu.Members roomId={this.props.roomId} {...props} />,
+    '~': props => <PopupMenu.Flags flags={this.flags} {...props} />
   }
 
   render (props, state) {
@@ -138,7 +138,7 @@ export default class AnnotationListing extends Component {
       let divider
       if (looped) {
         switch (state.sort) {
-          case "Page" : {
+          case 'Page' : {
             if (thePage < loc.getPageIndex()) {
               const newPage = loc.getPageIndex()
               divider = <div class="annotation-listing-divider">
@@ -148,7 +148,7 @@ export default class AnnotationListing extends Component {
             } else divider = <div class="annotation-listing-divider" />
             break
           }
-          case "Activity" : {
+          case 'Activity' : {
             const room = Client.client.getRoom(loc.getChild())
             if (room && state.sortOrder === 1) { // TODO handle times for reverse sort
               const age = initialDate - room.getLastActiveTimestamp()
@@ -156,21 +156,21 @@ export default class AnnotationListing extends Component {
               if (age < 300000 && dateDelta > 60000) {
                 currentDate = room.getLastActiveTimestamp()
                 const minutes = Math.floor(age / 60000)
-                const plural = minutes === 1 ? "" : "s"
+                const plural = minutes === 1 ? '' : 's'
                 divider = <div class="annotation-listing-divider">
                   <span>{`${minutes} minute${plural} ago`}</span>
                 </div>
               } else if (age < 3600000 && dateDelta > 600000) {
                 currentDate = room.getLastActiveTimestamp()
                 const minutes = Math.floor(age / 60000)
-                const plural = minutes === 1 ? "" : "s"
+                const plural = minutes === 1 ? '' : 's'
                 divider = <div class="annotation-listing-divider">
                   <span>{`${minutes} minute${plural} ago`}</span>
                 </div>
               } else if (age < 86400000 && dateDelta > 3600000) {
                 currentDate = room.getLastActiveTimestamp()
                 const hours = Math.floor(age / 3600000)
-                const plural = hours === 1 ? "" : "s"
+                const plural = hours === 1 ? '' : 's'
                 divider = <div class="annotation-listing-divider">
                   <span>{`${hours} hour${plural} ago`}</span>
                 </div>
@@ -179,37 +179,37 @@ export default class AnnotationListing extends Component {
                 const dateObject = new Date(currentDate)
                 divider = <div class="annotation-listing-divider">
                   <span>{`on ${dateObject.toLocaleDateString('en-US', {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   })}`}</span></div>
               } else divider = <div class="annotation-listing-divider" />
-              break
             }
+            break
           }
-          case "Creation" : {
+          case 'Creation' : {
             if (state.sortOrder === 1) { // TODO handle times for reverse sort
               const age = initialDate - loc.event.getTs()
               const dateDelta = currentDate - loc.event.getTs()
               if (age < 300000 && dateDelta > 60000) {
                 currentDate = loc.event.getTs()
                 const minutes = Math.floor(age / 60000)
-                const plural = minutes === 1 ? "" : "s"
+                const plural = minutes === 1 ? '' : 's'
                 divider = <div class="annotation-listing-divider">
                   <span>{`${minutes} minute${plural} ago`}</span>
                 </div>
               } else if (age < 3600000 && dateDelta > 600000) {
                 currentDate = loc.event.getTs()
                 const minutes = Math.floor(age / 60000)
-                const plural = minutes === 1 ? "" : "s"
+                const plural = minutes === 1 ? '' : 's'
                 divider = <div class="annotation-listing-divider">
                   <span>{`${minutes} minute${plural} ago`}</span>
                 </div>
               } else if (age < 86400000 && dateDelta > 3600000) {
                 currentDate = loc.event.getTs()
                 const hours = Math.floor(age / 3600000)
-                const plural = hours === 1 ? "" : "s"
+                const plural = hours === 1 ? '' : 's'
                 divider = <div class="annotation-listing-divider">
                   <span>{`${hours} hour${plural} ago`}</span>
                 </div>
@@ -218,14 +218,14 @@ export default class AnnotationListing extends Component {
                 const dateObject = new Date(currentDate)
                 divider = <div class="annotation-listing-divider">
                   <span>{`on ${dateObject.toLocaleDateString('en-US', {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   })}`}</span></div>
               } else divider = <div class="annotation-listing-divider" />
-              break
             }
+            break
           }
           default : divider = <div class="annotation-listing-divider" />
         }
@@ -255,14 +255,14 @@ export default class AnnotationListing extends Component {
                       : Icons.sortAsc
                     }
                   </button>
-                  <button data-current-button={state.sort === "Activity"}
+                  <button data-current-button={state.sort === 'Activity'}
                     onClick={this.sortByActivity}
                     class="styled-button">Activity</button>
-                  <button data-current-button={state.sort === "Creation"}
+                  <button data-current-button={state.sort === 'Creation'}
                     onClick={this.sortByCreation}
                     class="styled-button">Creation</button>
-                  {props.mimetype === "application/pdf" 
-                    ? <button data-current-button={state.sort === "Page"}
+                  {props.mimetype === 'application/pdf'
+                    ? <button data-current-button={state.sort === 'Page'}
                         onClick={this.sortByPage}
                         class="styled-button">Page</button>
                     : null
@@ -275,7 +275,7 @@ export default class AnnotationListing extends Component {
                       : state.sortOrder === 1 ? theAnnotations : theAnnotations.reverse()
                   }
               </div>
-              <div id="annotation-panel-button-wrapper" data-mode={state.searchFocus ? "search" : "navigation"}>
+              <div id="annotation-panel-button-wrapper" data-mode={state.searchFocus ? 'search' : 'navigation'}>
                 <PopupMenu.Menu
                   textValue={props.annotationFilter}
                   textarea={this.searchInput}
@@ -294,7 +294,7 @@ export default class AnnotationListing extends Component {
 }
 
 class AnnotationListingEntry extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       topic: props.annotationLocation.getText()
@@ -303,18 +303,18 @@ class AnnotationListingEntry extends Component {
 
   componentDidMount () {
     renderLatexInElement(this.comment.current)
-    Client.client.on("Room.timeline", this.handleTimeline)
-    Client.client.on("Room.accountData", this.handleTimeline)
+    Client.client.on('Room.timeline', this.handleTimeline)
+    Client.client.on('Room.accountData', this.handleTimeline)
     processLinks(this.comment.current)
     this.setTopic()
   }
 
   componentWillUnmount () {
-    Client.client.off("Room.timeline", this.handleTimeline)
-    Client.client.off("Room.accountData", this.handleTimeline)
+    Client.client.off('Room.timeline', this.handleTimeline)
+    Client.client.off('Room.accountData', this.handleTimeline)
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate (prevProps) {
     if (prevProps.focus?.getChild() !== this.props.annotationLocation.getChild() &&
       this.props.focus?.getChild() === this.props.annotationLocation.getChild()) {
       this.entry.current.scrollIntoView()
@@ -329,12 +329,12 @@ class AnnotationListingEntry extends Component {
 
   entry = createRef()
 
-  async setTopic() {
+  async setTopic () {
     this.room = await Client.client.getRoomWithState(this.props.annotationLocation.getChild())
     this.setState({
       topic: this.room.getLiveTimeline()
         .getState(Matrix.EventTimeline.FORWARDS)
-        .getStateEvents("m.room.topic", "")
+        .getStateEvents('m.room.topic', '')
         ?.getContent().topic || this.props.annotationLocation.getText()
     })
   }
@@ -347,8 +347,8 @@ class AnnotationListingEntry extends Component {
 
   userColor = new UserColor(this.creator.userId)
 
-  render(props, state) {
-    const typing = typeof (props.typing) === "object" && Object.keys(props.typing).length > 0 ? true : null
+  render (props) {
+    const typing = typeof (props.typing) === 'object' && Object.keys(props.typing).length > 0 ? true : null
     const focused = props.focus?.getChild() === props.annotationLocation.getChild()
     return <div style={this.userColor.styleVariables}
       data-annotation-entry-typing={typing}
@@ -356,7 +356,7 @@ class AnnotationListingEntry extends Component {
       ref={this.entry}
       onclick={this.handleClick}
       class="annotation-listing-entry">
-      <LocationPreview 
+      <LocationPreview
         showPosition={true}
         resource={props.resource}
         location={props.annotationLocation}
@@ -371,17 +371,17 @@ class AnnotationListingEntry extends Component {
   }
 }
 
-function AnnotationListingComment(props) {
+function AnnotationListingComment (props) {
   const content = props.annotationLocation.getRootContent()
   if (content) {
     let body
     switch (content.msgtype) {
-      case "m.text" : body = DisplayContent({content}); break
-      case "m.notice" : body = <div class="annotation-listing-fallback"><p>Sent a notice</p></div>; break
-      case "m.image" : body = <div class="annotation-listing-fallback"><p>Sent a file</p></div>; break
-      case "m.video" : body = <div class="annotation-listing-fallback"><p>Sent a video</p></div>; break
-      case "m.audio" : body = <div class="annotation-listing-fallback"><p>Sent an audio recording</p></div>; break
-      case "m.emote" : {
+      case 'm.text' : body = DisplayContent({ content }); break
+      case 'm.notice' : body = <div class="annotation-listing-fallback"><p>Sent a notice</p></div>; break
+      case 'm.image' : body = <div class="annotation-listing-fallback"><p>Sent a file</p></div>; break
+      case 'm.video' : body = <div class="annotation-listing-fallback"><p>Sent a video</p></div>; break
+      case 'm.audio' : body = <div class="annotation-listing-fallback"><p>Sent an audio recording</p></div>; break
+      case 'm.emote' : {
         if (content[mscMarkupMsgKey]) body = <div class="annotation-listing-fallback"><p>Sent an annotation</p></div>
         else body = <div class="annotation-listing-fallback"><p>Sent a message</p></div>
         break
@@ -393,19 +393,19 @@ function AnnotationListingComment(props) {
       <div
         ref={props.commentRef}
         class={props.unread
-          ? "annotation-listing-comment-unread"
-          : "annotation-listing-comment"}
+          ? 'annotation-listing-comment-unread'
+          : 'annotation-listing-comment'}
       > {body} </div>
       <div class="annotation-listing-info">
         <div class="annotation-listing-features">
-          {props.annotationLocation.isQuestion() ? Icons.question: null}
+          {props.annotationLocation.isQuestion() ? Icons.question : null}
           {props.annotationLocation.isPrivate() ? Icons.lock : null}
-          {props.annotationLocation.getOrientation() === "parent" ? Icons.eyeOff : null}
+          {props.annotationLocation.getOrientation() === 'parent' ? Icons.eyeOff : null}
         </div>
         <div class="annotation-listing-creator"><MemberPill member={props.creator} /></div>
       </div>
     </Fragment>
-  } else if (props.annotationLocation.getStatus() === "pending") {
+  } else if (props.annotationLocation.getStatus() === 'pending') {
     return <div class="annotation-listing-pending">awaiting your comment... </div>
   }
 }

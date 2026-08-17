@@ -1,71 +1,71 @@
-export const pdfStateType = "com.open-tower.populus.pdf" // increment to start over with a fresh event type
-export const lastViewed = "com.open-tower.populus.lastPositionViewed"
-export const serverRoot = `https://matrix.example.org`
-export const joinRule = "m.room.join_rules"
-export const mscParent = "com.open-tower.msc3574.markup.parent"
-export const mscResourceData = "com.open-tower.msc3574.markup.resource"
-export const mscPdfHighlight = "com.open-tower.msc3592.markup.pdf.highlight"
-export const mscMediaFragment = "com.open-tower.msc3775.markup.media.fragment"
-export const mscPdfText = "com.open-tower.msc3592.markup.pdf.text"
-export const mscLocation = "com.open-tower.msc3574.markup.location"
-export const mscMarkupMsgKey = "com.open-tower.msc3574.markup"
-export const populusHighlight = "com.open-tower.populus.markup.pdf.highlight"
-export const populusCollectionChild = "com.open-tower.populus.collection_child"
-export const populusWaveformPCM = "com.open-tower.populus.waveformPCM"
+export const pdfStateType = 'com.open-tower.populus.pdf' // increment to start over with a fresh event type
+export const lastViewed = 'com.open-tower.populus.lastPositionViewed'
+export const serverRoot = 'https://matrix.example.org'
+export const joinRule = 'm.room.join_rules'
+export const mscParent = 'com.open-tower.msc3574.markup.parent'
+export const mscResourceData = 'com.open-tower.msc3574.markup.resource'
+export const mscPdfHighlight = 'com.open-tower.msc3592.markup.pdf.highlight'
+export const mscMediaFragment = 'com.open-tower.msc3775.markup.media.fragment'
+export const mscPdfText = 'com.open-tower.msc3592.markup.pdf.text'
+export const mscLocation = 'com.open-tower.msc3574.markup.location'
+export const mscMarkupMsgKey = 'com.open-tower.msc3574.markup'
+export const populusHighlight = 'com.open-tower.populus.markup.pdf.highlight'
+export const populusCollectionChild = 'com.open-tower.populus.collection_child'
+export const populusWaveformPCM = 'com.open-tower.populus.waveformPCM'
 
 // based on https://github.com/matrix-org/matrix-react-sdk/blob/78b1f6c0b13efd57031a329a1ac62baba948dad3/src/HtmlUtils.tsx
-const COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
+const COLOR_REGEX = /^#[0-9a-fA-F]{6}$/
 const transformTags = {
   // add blank targets to all hyperlinks except vector URLs
-  a(tagName, attribs) {
-    if (attribs.href) { attribs.target = '_blank'; }
-    attribs.rel = 'noreferrer noopener'; // https://mathiasbynens.github.io/rel-noopener/
-    return { tagName, attribs };
+  a (tagName, attribs) {
+    if (attribs.href) { attribs.target = '_blank' }
+    attribs.rel = 'noreferrer noopener' // https://mathiasbynens.github.io/rel-noopener/
+    return { tagName, attribs }
   },
-  img(tagName) {
+  img (tagName) {
     // security for images is complicated, and they're not important for markdown right now.
-    return { tagName, attribs: {}};
+    return { tagName, attribs: {} }
   },
-  code(tagName, attribs) {
+  code (tagName, attribs) {
     if (typeof attribs.class !== 'undefined') {
       // Filter out all classes other than ones starting with language- for syntax highlighting.
       const classes = attribs.class.split(/\s/).filter((cl) => {
-        return cl.startsWith('language-') && !cl.startsWith('language-_');
-      });
-      attribs.class = classes.join(' ');
+        return cl.startsWith('language-') && !cl.startsWith('language-_')
+      })
+      attribs.class = classes.join(' ')
     }
-    return { tagName, attribs };
+    return { tagName, attribs }
   },
-  '*'(tagName, attribs) {
+  '*' (tagName, attribs) {
     // Delete any style previously assigned, style is an allowedTag for font and span
     // because attributes are stripped after transforming
-    delete attribs.style;
+    delete attribs.style
 
     // Sanitise and transform data-mx-color and data-mx-bg-color to their CSS
     // equivalents
     const customCSSMapper = {
       'data-mx-color': 'color',
       'data-mx-bg-color': 'background-color'
-    };
+    }
 
-    let style = "";
+    let style = ''
     Object.keys(customCSSMapper).forEach((customAttributeKey) => {
-      const cssAttributeKey = customCSSMapper[customAttributeKey];
-      const customAttributeValue = attribs[customAttributeKey];
+      const cssAttributeKey = customCSSMapper[customAttributeKey]
+      const customAttributeValue = attribs[customAttributeKey]
       if (customAttributeValue &&
                 typeof customAttributeValue === 'string' &&
                 COLOR_REGEX.test(customAttributeValue)
       ) {
-        style += `${cssAttributeKey}:${customAttributeValue};`;
-        delete attribs[customAttributeKey];
+        style += `${cssAttributeKey}:${customAttributeValue};`
+        delete attribs[customAttributeKey]
       }
-    });
+    })
 
-    if (style) { attribs.style = style; }
+    if (style) { attribs.style = style }
 
-    return { tagName, attribs };
+    return { tagName, attribs }
   }
-};
+}
 
 export const sanitizeHtmlParams = {
   allowedTags: [
@@ -94,4 +94,4 @@ export const sanitizeHtmlParams = {
   transformTags,
   // 50 levels deep "should be enough for anyone"
   nestingLimit: 50
-};
+}

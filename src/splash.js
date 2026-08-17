@@ -1,20 +1,20 @@
-import { h, Component } from 'preact';
+import { h, Component } from 'preact'
 import { handleLaunchParameters } from './utils/queryParameters.js'
 import './styles/splash.css'
 import Client from './client.js'
 
 export default class SplashView extends Component {
   pollInitialized = async () => {
-    if (Client.client && ["PREPARED", "SYNCING", "ERROR"].includes(Client.client.getSyncState()) ) {
+    if (Client.client && ['PREPARED', 'SYNCING', 'ERROR'].includes(Client.client.getSyncState())) {
       // in case of error, we still let the user into the app, for offline usage
-      this.props.setInitializationStage("initialized")
+      this.props.setInitializationStage('initialized')
       handleLaunchParameters(this.props.logoutHandler) // clear query parameters
     } else {
       setTimeout(this.pollInitialized, 1000)
     }
   }
 
-  componentDidMount() { this.pollInitialized() }
+  componentDidMount () { this.pollInitialized() }
 
   render (props) {
     return <div id="splash-wrapper">

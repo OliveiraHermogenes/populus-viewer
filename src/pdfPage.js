@@ -1,16 +1,16 @@
-import { h, createRef, Component } from 'preact';
-import AnnotationLayer from "./annotation.js"
+import { h, createRef, Component } from 'preact'
+import AnnotationLayer from './annotation.js'
 import Client from './client.js'
-import PdfCanvas from "./pdfCanvas.js"
-import QuadPoints from "./utils/quadPoints.js"
-import * as Matrix from "matrix-js-sdk"
-import { unionRects } from "./utils/layout.js"
-import { onlineOrAlert } from "./utils/alerts.js"
+import PdfCanvas from './pdfCanvas.js'
+import QuadPoints from './utils/quadPoints.js'
+import * as Matrix from 'matrix-js-sdk'
+import { unionRects } from './utils/layout.js'
+import { onlineOrAlert } from './utils/alerts.js'
 import { textFromPdfSelection, rectsFromPdfSelection } from './utils/selection.js'
-import { mscLocation, mscPdfText, mscPdfHighlight, populusHighlight } from "./constants.js"
+import { mscLocation, mscPdfText, mscPdfHighlight, populusHighlight } from './constants.js'
 
 export default class PdfPage extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = { pdfFitRatio: 1 }
     this.pdfScale = 3
@@ -23,7 +23,7 @@ export default class PdfPage extends Component {
 
   annotationLayerWrapper = createRef()
 
-  hasSelection() {
+  hasSelection () {
     return !window.getSelection().isCollapsed &&
       this.textLayer.current.contains(window.getSelection().getRangeAt(0).endContainer) &&
       this.textLayer.current.contains(window.getSelection().getRangeAt(0).startContainer)
@@ -31,7 +31,7 @@ export default class PdfPage extends Component {
 
   isTarget = e => e.target === this.annotationLayer.current.base
 
-  setPdfFitRatio = pdfFitRatio => this.setState({pdfFitRatio})
+  setPdfFitRatio = pdfFitRatio => this.setState({ pdfFitRatio })
 
   generateLocation = sel => {
     const theSelectedText = textFromPdfSelection(sel)
@@ -46,11 +46,11 @@ export default class PdfPage extends Component {
         page_index: this.props.pageFocused,
         rect: boundingQuad.getBoundingRect(),
         quad_points: clientQuads.map(quad => quad.getArray()),
-        contents: "", // highlight contents, per PDF spec. Fill this with the first chat message text, or fallback text
+        contents: '', // highlight contents, per PDF spec. Fill this with the first chat message text, or fallback text
         text_content: theSelectedText // the actual highlighted text
       },
       [populusHighlight]: {
-        activityStatus: "pending",
+        activityStatus: 'pending',
         creator: Client.client.getUserId()
       }
     }
@@ -65,11 +65,11 @@ export default class PdfPage extends Component {
     // So we can omit the DPI parameter here.
     const theDomain = Client.client.getDomain()
     const theRoomState = this.props.room.getLiveTimeline().getState(Matrix.EventTimeline.FORWARDS)
-    const theLevels = theRoomState.getStateEvents("m.room.power_levels")
+    const theLevels = theRoomState.getStateEvents('m.room.power_levels')
     const locationData = this.generateLocation(theSelection)
     // TODO: we should set room_alias_name and name, in a useful way based on the selection
     return Client.client.createRoom({
-      visibility: "private",
+      visibility: 'private',
       name: `highlighted passage on page ${this.props.pageFocused}`,
       power_level_content_override: {
         users: Object.assign({}, theLevels[0].getContent().users, {
@@ -78,9 +78,9 @@ export default class PdfPage extends Component {
       },
       topic: theSelectedText,
       initial_state: [{
-        type: "m.room.join_rules",
-        state_key: "",
-        content: {join_rule: "public"}
+        type: 'm.room.join_rules',
+        state_key: '',
+        content: { join_rule: 'public' }
       },
       {
         type: Matrix.EventType.SpaceParent, // we indicate that the current room is the parent
@@ -94,7 +94,7 @@ export default class PdfPage extends Component {
       const childContent = { via: [theDomain], [mscLocation]: locationData }
       // We focus on a new fake placeholder event to insert the highlight immediately
       const fakeEvent = new Matrix.MatrixEvent({
-        type: "m.space.child",
+        type: 'm.space.child',
         origin_server_ts: new Date().getTime(),
         room_id: this.props.room.roomId,
         sender: Client.client.getUserId(),
@@ -110,7 +110,7 @@ export default class PdfPage extends Component {
     if (!onlineOrAlert()) return
     const theDomain = Client.client.getDomain()
     const theRoomState = this.props.room.getLiveTimeline().getState(Matrix.EventTimeline.FORWARDS)
-    const theLevels = theRoomState.getStateEvents("m.room.power_levels")
+    const theLevels = theRoomState.getStateEvents('m.room.power_levels')
     const newY = this.annotationLayerWrapper.current.scrollHeight - theY
     const locationData = {
       [mscPdfText]: {
@@ -121,16 +121,16 @@ export default class PdfPage extends Component {
           top: newY,
           bottom: newY - 10
         },
-        name: "Comment",
-        contents: "" // highlight contents, per PDF spec. TODO Fill this with the first chat message text, or fallback text
+        name: 'Comment',
+        contents: '' // highlight contents, per PDF spec. TODO Fill this with the first chat message text, or fallback text
       },
       [populusHighlight]: {
-        activityStatus: "pending",
+        activityStatus: 'pending',
         creator: Client.client.getUserId()
       }
     }
     return Client.client.createRoom({
-      visibility: "private",
+      visibility: 'private',
       name: `pindrop on page ${this.props.pageFocused}`,
       power_level_content_override: {
         users: Object.assign({}, theLevels[0].getContent().users, {
@@ -138,9 +138,9 @@ export default class PdfPage extends Component {
         })
       },
       initial_state: [{
-        type: "m.room.join_rules",
-        state_key: "",
-        content: {join_rule: "public"}
+        type: 'm.room.join_rules',
+        state_key: '',
+        content: { join_rule: 'public' }
       },
       {
         type: Matrix.EventType.SpaceParent, // we indicate that the current room is the parent
@@ -158,7 +158,7 @@ export default class PdfPage extends Component {
         [mscLocation]: locationData
       }
       const fakeEvent = new Matrix.MatrixEvent({
-        type: "m.space.child",
+        type: 'm.space.child',
         origin_server_ts: new Date().getTime(),
         room_id: this.props.room.roomId,
         sender: Client.client.getUserId(),
@@ -170,11 +170,11 @@ export default class PdfPage extends Component {
     }).catch(e => alert(e))
   }
 
-  render(props, state) {
+  render (props, state) {
     const dynamicDocumentStyle = {
-      "--pdfFitRatio": state.pdfFitRatio,
-      "--pdfWidthPx": `${props.pdfWidthPx}px`,
-      "--pdfHeightPx": `${props.pdfHeightPx}px`
+      '--pdfFitRatio': state.pdfFitRatio,
+      '--pdfWidthPx': `${props.pdfWidthPx}px`,
+      '--pdfHeightPx': `${props.pdfHeightPx}px`
     }
     return <div class="page-wrapper" style={dynamicDocumentStyle}>
       <PdfCanvas

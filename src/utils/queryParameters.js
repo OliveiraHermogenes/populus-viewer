@@ -1,12 +1,12 @@
-import { h, Fragment} from 'preact'
+import { h, Fragment } from 'preact'
 import Client from '../client.js'
 import Toast from '../toast.js'
 
 // this handles query parameters that should be present at the application launch
-export function handleLaunchParameters(logoutHandler) {
+export function handleLaunchParameters (logoutHandler) {
   const queryParameters = new URLSearchParams(window.location.search)
-  const toJoin = queryParameters.get("join")
-  const joinVia = queryParameters.getAll("via")
+  const toJoin = queryParameters.get('join')
+  const joinVia = queryParameters.getAll('via')
   const server = queryParameters.get('server')
   if (toJoin && joinVia.length > 0) Client.client.joinRoom(toJoin, { viaServers: joinVia })
   if (server && server !== Client.client.getDomain()) {
@@ -30,5 +30,5 @@ export function handleLaunchParameters(logoutHandler) {
       </div>
     </Fragment>)
   }
-  window.history.replaceState({toastWarning: true}, '', window.location.pathname + window.location.hash)
+  window.history.replaceState({ toastWarning: true }, '', window.location.pathname + window.location.hash)
 }
