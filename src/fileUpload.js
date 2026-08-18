@@ -172,8 +172,9 @@ export default class FileUpload extends Component {
     const theFile = this.fileLoader.current.files[0]
     let waveformMxc
     if (this.uploadPreview?.current?.pcm) {
-      waveformResponse = await Client.client.uploadContent(JSON.stringify(this.uploadPreview?.current?.pcm), { progressHandler: this.progressHandler })
+      const waveformResponse = await Client.client.uploadContent(JSON.stringify(this.uploadPreview?.current?.pcm), { progressHandler: this.progressHandler })
         .catch(this.uploadError)
+      waveformMxc = waveformResponse.content_uri
     }
     const response = await Client.client.uploadContent(theFile, { progressHandler: this.progressHandler })
       .catch(this.uploadError)
@@ -207,7 +208,7 @@ export default class FileUpload extends Component {
           ? [{
               type: populusWaveformPCM,
               state_key: '',
-              content: { mxc: waveformResponse.content_uri },
+              content: { mxc: waveformMxc },
             }]
           : []
         )
@@ -409,11 +410,9 @@ class PdfUploadPreview extends Component {
       pdfPromise: PDFJS.getDocument(this.pdfUrl).promise,
       pdfPage: 1
     }
-  }
-
-  async componentDidMount () {
-    const pdf = await this.state.pdfPromise
-    this.setState({ totalPages: pdf.numPages })
+    this.state.pdfPromise.then(pdf => {
+      this.setState({ totalPages: pdf.numPages })
+    })
   }
 
   componentWillUnmount () { URL.revokeObjectURL(this.pdfUrl) }
@@ -475,7 +474,7 @@ class MediaUploadPreview extends Component {
     const prng = mulberry32(hashString(this.props.file.name))
     if (this.isVideo) this.videoElement.current.src = this.mediaUrl
     for (let i = 0; i < 2048; i++) pcm.push((prng() * 2) - 1)
-    this.wavesurfer = new WaveSurfer.create({
+    this.wavesurfer = WaveSurfer.create({
       container: '#media-upload-preview-waveform',
       backend: 'MediaElement',
       barWidth: 5,

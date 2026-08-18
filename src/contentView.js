@@ -512,7 +512,7 @@ export default class ContentView extends Component {
   getContentComponent () {
     if (this.state.mimetype === 'application/pdf') {
       const page = PdfContent.positionToPage(this.props.resourcePosition, this.state.room)
-      if (this.props.resourcePosition != page) { // important to allow type coercion via `=!` here.
+      if (Number(this.props.resourcePosition) !== page) {
         History.replace(`/${encodeURIComponent(this.props.resourceAlias)}` +
           `/${page}` +
           `${this.props.roomFocused ? `/${this.props.roomFocused}` : ''}` +
@@ -547,7 +547,7 @@ export default class ContentView extends Component {
           />
     } else if (this.state.mimetype?.match(/^audio|^video/)) {
       const timestamp = MediaContent.positionToTimestamp(this.props.resourcePosition, this.state.room)
-      if (this.props.resourcePosition != timestamp) { // important to allow type coercion via `=!` here.
+      if (Number(this.props.resourcePosition) !== timestamp) {
         History.replace(`/${encodeURIComponent(this.props.resourceAlias)}` +
           `/${timestamp}` +
           `${this.props.roomFocused ? `/${this.props.roomFocused}` : ''}` +

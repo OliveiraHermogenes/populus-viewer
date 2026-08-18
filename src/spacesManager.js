@@ -76,9 +76,7 @@ export default class SpacesManager extends Component {
     const newItems = this.props.filterItems.filter(item => item.value !== s.value)
     if (newItems.length === this.props.filterItems.length) newItems.push(s)
     this.props.setFilterItems(newItems)
-    this.props.showMainView
-      ? this.props.showMainView()
-      : null
+    if (this.props.showMainView) this.props.showMainView()
   }
 
   isActiveCollection (room) {
@@ -154,7 +152,7 @@ class SpaceListing extends Component {
     let nextBatch = SpacesManager.spaces[this.props.room.roomId].nextBatch
     const response = await Client.client.getRoomHierarchy(this.props.room.roomId, 30, 1, false, nextBatch)
     const via = SpacesManager.spaces[this.props.room.roomId].via
-    for (const childState of response.rooms[0]?.children_state) {
+    for (const childState of (response.rooms[0]?.children_state || [])) {
       via[childState.state_key] = childState.content.via
     }
     const children = SpacesManager.spaces[this.props.room.roomId].children
@@ -333,7 +331,7 @@ class AddChild extends Component {
     }, 500)
   }
 
-  updateHeight = _ => this.currentListWrapper.current.style.height = `${this.currentList.current.scrollHeight}px`
+  updateHeight = _ => { this.currentListWrapper.current.style.height = `${this.currentList.current.scrollHeight}px` }
 
   addDiscussions = _ => this.setState({ adding: true })
 

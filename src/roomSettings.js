@@ -147,10 +147,10 @@ export default class RoomSettings extends Component {
 
   rolesUpdated = _ => {
     for (const user in this.state.users) {
-      if (!(user in this.powerLevels?.users)) return true
+      if (!(user in (this.powerLevels?.users || {}))) return true
       if (this.state.users[user] !== this.powerLevels?.users?.[user]) return true
     }
-    for (const user in this.powerLevels?.users) {
+    for (const user in (this.powerLevels?.users || {})) {
       if (!(user in this.state.users)) return true
       if (this.state.users[user] !== this.powerLevels?.users?.[user]) return true
     }
@@ -165,7 +165,7 @@ export default class RoomSettings extends Component {
     if (this.state.joinRule !== this.initialJoinRule) {
       const allowList = this.props.resource
         ? [{ type: 'm.room_membership', room_id: this.props.resource.room.roomId }]
-        : this.roomState.getStateEvents(spaceParent).map(ev => ({ type: 'm.room_membership', room_id: ev.getStateKey() }))
+        : this.roomState.getStateEvents(Matrix.EventType.SpaceParent).map(ev => ({ type: 'm.room_membership', room_id: ev.getStateKey() }))
       const newRule = {
         join_rule: this.state.joinRule,
         ...(this.state.joinRule === 'restricted' && { allow: allowList })
@@ -479,7 +479,7 @@ class ConfigurePowerForState extends Component {
   }
 
   getPowerLevelForStateEvent = _ => {
-    if (this.props.type in this.props.powerLevels?.events) return this.props.powerLevels.events[this.props.type]
+    if (this.props.type in (this.props.powerLevels?.events || {})) return this.props.powerLevels.events[this.props.type]
     let sendStatePowerLevel = 50
     if (this.props.powerLevels) {
       const pl = this.props.powerLevels?.state_default
@@ -495,9 +495,9 @@ class ConfigurePowerForState extends Component {
 
   // but the maximum you can change it to is your own power level
   mayChangePowerLevelForStateEvent = _ => {
-    if (Matrix.EventType.RoomPowerLevels in this.props.powerLevels?.events) {
+    if (Matrix.EventType.RoomPowerLevels in (this.props.powerLevels?.events || {})) {
       // forbidden if it's already set higher than your own level
-      if (this.props.member.powerLevel < getPowerLevelForStateEvent(this.props.type)) return false
+      if (this.props.member.powerLevel < this.getPowerLevelForStateEvent(this.props.type)) return false
       // or if you can't send power level events
       const toAdjustPowerLevels = this.props.powerLevels.events[Matrix.EventType.RoomPowerLevels]
       return (this.props.member.powerLevel >= toAdjustPowerLevels)
@@ -558,7 +558,7 @@ class ConfigurePowerForKey extends Component {
 
   // but the maximum you can change it to is your own power level
   mayChangePowerLevelForKey = _ => {
-    if (Matrix.EventType.RoomPowerLevels in this.props.powerLevels?.events) {
+    if (Matrix.EventType.RoomPowerLevels in (this.props.powerLevels?.events || {})) {
       // forbidden if your powerlevel is lower than the current value
       if (this.props.member.powerLevel < this.getPowerLevelForKey(this.props.powerKey)) return false
       // or if you can't send power level events

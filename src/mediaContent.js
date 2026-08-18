@@ -191,8 +191,7 @@ export default class MediaContent extends Component {
         this.wavesurfer.seekTo(percentAcross)
         this.createSelection(percentAcross * this.wavesurfer.getDuration(), percentAcross * this.wavesurfer.getDuration() + 5)
       }, 500)
-    } else if (['REGION', 'HANDLE'].includes(e.target.tagName)) return
-    else {
+    } else if (!['REGION', 'HANDLE'].includes(e.target.tagName)) {
       if (e.noClear || this.video.current?.base.contains(e.target)) return
       clearTimeout(this.longPressTimeout)
       this.clearSelection()
@@ -362,7 +361,7 @@ export default class MediaContent extends Component {
 
   drawMedia = pcm => async mediaUrl => {
     this.props.setMediaLoadingStatus('Rendering waveform...')
-    this.wavesurfer = new WaveSurfer.create({
+    this.wavesurfer = WaveSurfer.create({
       container: '#waveform',
       backend: 'MediaElement',
       barWidth: 5,
@@ -589,6 +588,9 @@ class MediaViewVideo extends Component {
   }
 
   render (props, state) {
+    if (!props.hasSelection && !props.videoLocation?.getMediaRect()) {
+      props.videoOverlay.current = null
+    }
     return <div id="media-view-video">
       <div id="media-view-video-wrapper">
         <video onclick={this.setOverlayPosition} ref={props.videoElement} />
@@ -609,7 +611,7 @@ class MediaViewVideo extends Component {
               videoElement={props.videoElement}
               initialPosition={props.videoLocation.getMediaRect()}
           />
-            : props.videoOverlay.current = null
+            : null
         }
       </div>
     </div>
@@ -696,7 +698,7 @@ class MediaViewVideoOverlay extends Component {
       delete this.initialY
       delete this.initialClientX
       delete this.initialClientY
-      this.overlay.current?.releasePointerCapture(e.pointerId)
+      this.overlay.current?.releasePointerCapture(e2.pointerId)
       this.overlay.current?.removeEventListener('pointermove', this.handleDrag)
     })
   }
@@ -710,7 +712,7 @@ class MediaViewVideoOverlay extends Component {
     this.overlay.current.addEventListener('pointerup', e2 => {
       delete this.initialWidth
       delete this.initialClientX
-      this.overlay.current?.releasePointerCapture(e.pointerId)
+      this.overlay.current?.releasePointerCapture(e2.pointerId)
       this.overlay.current?.removeEventListener('pointermove', this.handleResizeX)
     })
   }
@@ -724,7 +726,7 @@ class MediaViewVideoOverlay extends Component {
     this.overlay.current.addEventListener('pointerup', e2 => {
       delete this.initialHeight
       delete this.initialClientY
-      this.overlay.current?.releasePointerCapture(e.pointerId)
+      this.overlay.current?.releasePointerCapture(e2.pointerId)
       this.overlay.current?.removeEventListener('pointermove', this.handleResizeY)
     })
   }

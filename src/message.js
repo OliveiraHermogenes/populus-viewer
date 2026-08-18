@@ -215,7 +215,7 @@ class ReplyPreview extends Component {
     } else {
       switch (this.state.liveEvent.getContent().msgtype) {
         case 'm.video': {
-          const info = this.state.liveEvent.getContent()?.info.thumbnail_info || props.event?.getContent()?.info
+          const info = this.state.liveEvent.getContent()?.info.thumbnail_info || this.props.event?.getContent()?.info
           const blurhash = this.state.liveEvent.getContent()?.info?.blurhash
           const thumbUrl = this.state.liveEvent.getContent().info.thumbnail_url
           const poster = thumbUrl ? Client.client.getHttpUriForMxcFromHS(thumbUrl) : null
@@ -231,7 +231,7 @@ class ReplyPreview extends Component {
           break
         }
         case 'm.image': {
-          const info = this.state.liveEvent.getContent()?.info.thumbnail_info || props.event?.getContent()?.info
+          const info = this.state.liveEvent.getContent()?.info.thumbnail_info || this.props.event?.getContent()?.info
           const blurhash = this.state.liveEvent.getContent()?.info?.blurhash
           const thumbUrl = this.state.liveEvent.getContent().info.thumbnail_url
           const url = thumbUrl ? Client.client.getHttpUriForMxcFromHS(thumbUrl) : null

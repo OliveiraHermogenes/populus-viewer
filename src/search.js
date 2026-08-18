@@ -29,13 +29,13 @@ export default class SearchBar extends Component {
   }
 
   handleInputBlur = e => {
-    this.props.setFocus ? this.props.setFocus(false) : null
-    this.props.onBlur ? this.props.onBlur(e) : null
+    if (this.props.setFocus) this.props.setFocus(false)
+    if (this.props.onBlur) this.props.onBlur(e)
   }
 
   handleInputFocus = e => {
-    this.props.setFocus ? this.props.setFocus(true) : null
-    this.props.onFocus ? this.props.onFocus(e) : null
+    if (this.props.setFocus) this.props.setFocus(true)
+    if (this.props.onFocus) this.props.onFocus(e)
   }
 
   handleInputKeydown = e => {
